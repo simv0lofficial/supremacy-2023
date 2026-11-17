@@ -1,0 +1,49 @@
+# Build & Output Directories
+/output/
+/build/
+/out/
+x64/
+x86/
+Debug/
+Release/
+
+# Visual Studio & IDEs
+/.vs/
+/.idea/
+/.vscode/
+*.user
+*.suo
+*.VC.db
+*.opendb
+*.sln.docstates
+
+# Local Tooling & AI Memory
+/.ai_memory/
+/.cache/
+__pycache__/
+*.pyc
+
+# Logs, Dumps & Temporary Files
+*.log
+*.dmp
+*.tlog
+
+# Compilation Artifacts
+*.obj
+*.o
+*.pdb
+*.idb
+*.ilk
+*.exp
+*.dll
+*.exe
+
+# Static Libraries (Ignore general, but whitelist vendored dependencies)
+*.lib
+*.a
+!third_party/luajit/libluajit.a
+
+# Legacy CMake Artifacts
+/CMakeUserPresets.json
+/CMakeCache.txt
+/CMakeFiles/

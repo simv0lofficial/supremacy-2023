@@ -1,0 +1,3066 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{F11E40CB-A985-5EEF-ABD5-76D6AAD3B7E2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\detail">
+      <UniqueIdentifier>{140AA393-ADAC-5F19-9EA0-7AC12BDF251E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include">
+      <UniqueIdentifier>{02D4A2EB-7738-57EE-9AD0-B248EF19B427}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\">
+      <UniqueIdentifier>{C1828DD8-2427-59D8-8D23-46A60D21F245}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet">
+      <UniqueIdentifier>{107B35A2-6A9B-5ABD-97EE-A53D7BE5F85D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\animation">
+      <UniqueIdentifier>{3B9F2C1F-F29B-5681-96B9-CC4D83A1F04D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\anti_aim">
+      <UniqueIdentifier>{406D8BF8-0F6B-5A70-B876-630A3039C64F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\client">
+      <UniqueIdentifier>{66F3432D-B979-50C6-8929-3B7914BE409F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\config_storage">
+      <UniqueIdentifier>{BDA5E035-31DB-5A28-B9D0-437C60195E73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\effects">
+      <UniqueIdentifier>{7BC64718-F8AF-5494-AFE6-ADC1F632D95A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\engine">
+      <UniqueIdentifier>{A8E52C88-EEBB-5526-AC08-51F25C53F9E4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\esp">
+      <UniqueIdentifier>{3AC51262-79EF-52E8-A077-7C82A462411B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\events">
+      <UniqueIdentifier>{645E8E45-2052-5BA1-BBEA-EADCC6C68107}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\hud">
+      <UniqueIdentifier>{A268947F-A0EE-5F43-8420-0D50F19C32DF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\input">
+      <UniqueIdentifier>{0B6449A4-ADFA-5080-A4AD-C0BA0F051639}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\lagcomp">
+      <UniqueIdentifier>{92D4B875-143F-5BA7-8267-ED3B0804FFF1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\legit">
+      <UniqueIdentifier>{828201FC-87E0-5E6F-B203-C6BD5389E9A5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\menu">
+      <UniqueIdentifier>{2C10D731-EA05-5EB3-9F01-02E8061D72ED}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\misc">
+      <UniqueIdentifier>{2150FE99-7BDA-5F0E-AFA4-3008295F5E5B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\movement">
+      <UniqueIdentifier>{5D51B9C9-EC0C-5B12-BE98-D24CE4E216FA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\network">
+      <UniqueIdentifier>{8A97D4E5-0C22-517D-A4DD-91FC470908C8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\players">
+      <UniqueIdentifier>{210FD91E-CC85-51C1-B7B1-93FEA76506AA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\prediction">
+      <UniqueIdentifier>{F52D7BEB-3509-5654-A499-973AE6806074}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\rage">
+      <UniqueIdentifier>{455916C1-BAA6-5189-8477-969C621CE39D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\render">
+      <UniqueIdentifier>{C7E5E4C6-B22B-5DE5-AD5D-601FFAA92C36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\resolver_runtime">
+      <UniqueIdentifier>{54898749-1269-5896-8C61-1984B0C9ADB8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\script">
+      <UniqueIdentifier>{6D2634BE-B590-5ABF-BD03-CFCB3D6BAE22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\skins">
+      <UniqueIdentifier>{BC9EF3F9-85D1-55B5-A403-658162846B28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\include\\skeet\weapon">
+      <UniqueIdentifier>{DE64DAF3-F47C-5A08-8951-8533F11A563A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\util">
+      <UniqueIdentifier>{94ABCBB7-2765-5BDE-B367-CC2516DEFD24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{23D8B78B-8959-5AAC-8C4C-7802BC8EF397}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\hooks">
+      <UniqueIdentifier>{A23A7EB8-E725-5125-942D-98F156E4314D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\hooks\game">
+      <UniqueIdentifier>{3727B616-AE59-5467-AF51-B900555299AA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\menu">
+      <UniqueIdentifier>{408069B4-4D13-5D9D-8BDF-1ECFBF32B1E7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\script">
+      <UniqueIdentifier>{A6EFD4B3-F690-54E0-AD60-9EE3108C16EC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\third_party">
+      <UniqueIdentifier>{9033CC56-3D1B-51B9-893B-62A97E764E0F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\util">
+      <UniqueIdentifier>{9DEA9EF8-6148-5C2E-9AB7-27DAA3A59831}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="aimbot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bonesetup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="chams.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="csgo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\action_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\cjson_internal.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\client_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\config_binding.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\entity_command_map.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\entity_command_memory.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\entity_command_scratch.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\entity_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\esp_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\files_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\final_target_context_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\flag_table_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\game_system_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\grenade_live_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\initialize_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\manager_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\menu_tab_atlas.inc">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\movement_math.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\owner_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\packet_duck_body.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\panorama_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\player_physics_hooks_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\post_firing_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\rage_math.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\rage_point_math.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\rage_safe_point_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\registry_catalog.inc">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\renderer_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\required_module_data.inc">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\restricted_player_command_internal.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\scanning_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\targeting_pipeline_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\ui_values_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="detail\world_engine_detail.hpp">
+      <Filter>Header Files\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="events.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hvh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\bone_runtime.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\bone_source_reference.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\bones.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\entity_update.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\fix_animation_backup.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\fix_animation_backup_cleanup.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\fix_animation_entity.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\fix_animations.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\fix_runtime_bindings.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\fix_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\layer_receive.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\layer_state.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\local_helpers.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\local_prediction_pose.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\local_prediction_pose_inputs.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\native_trigonometry.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\record_pose_scope.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\remote_animation_preparation.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\remote_setup_bones.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\runtime_bindings.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\animation\state_copy.hpp">
+      <Filter>Header Files\include\\skeet\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\angles.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\body_freestanding.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\body_yaw.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\command_owner.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\command_phase.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\config.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\edge.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\eligibility.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\finisher.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\freestanding.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\jitter.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\menu_dependencies.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\movement_capture.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\owner_lifecycle.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\pitch.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\precalculation.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\proximity.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\runtime.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\scheduler.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\startup_initializers.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\state.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\target_geometry.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\targets.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\anti_aim\yaw.hpp">
+      <Filter>Header Files\include\\skeet\anti_aim</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\button.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\buffered_shot_command.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\buffered_shot_lifecycle.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\buffered_shot_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\combat_runtime_factories.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_angle_retention.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_capture.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_capture_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_checksum.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_empty_tick.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_empty_tick_receiver.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_eye_adjustment.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_frame.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_orchestrator.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_owner_dispatch.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_packet_angle_guard.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_packet_transition.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_phase_receiver.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_phase_registry.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_pipeline.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_prediction_cache.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_recapture.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_transform.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\command_weapon_postprocess.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\commands.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\config_initializers.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\crt_initialization.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\crt_startup_bindings.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\entity_command_lifecycle.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\entity_command_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\entity_command_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\entity_observer_receiver.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\entity_observer_registry.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\entity_update_dispatch.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\exit_registration.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\exploit_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\feature_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\final_menu_startup.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\final_patch_startup.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\game_window_proxy_factory.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\generated_command_owners.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\global_config_initializers.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\history_runtime_factories.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\history_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\hitboxes.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\hook_descriptor_cleanup.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\input_commands.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\local_animation_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\local_player_animation_hooks.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\misc_runtime_factories.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\misc_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\movement_hud_factories.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\movement_hud_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\native_startup.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\packet_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\player_command_hooks.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\player_command_queries.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\player_data_update.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\player_physics_hooks.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\player_receive.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\player_receive_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\player_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\player_state.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\prediction_history_lifecycle.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\prediction_history_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\prediction_history_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\rejected_player_update.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\restricted_player_command.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\runtime_composition.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\runtime_feature_bindings.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\runtime_owner_bindings.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\runtime_owner_initialization.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\runtime_storage.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\shared_esp_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\shared_esp_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\shutdown.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\shutdown_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\skin_runtime_factories.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\source_application.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\source_dll.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\source_dll_shutdown.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\source_feature_runtime.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\source_feature_runtime_imports.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\source_startup_cleanup.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\source_terminal_cleanup.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\startup.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\startup_bindings.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\startup_reset.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\static_cleanup.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\static_crt_initialization.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\target_mask_lifecycle.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\target_mask_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\target_mask_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\target_refresh_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\verified_command.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\visual_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\world_runtime_factories.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client\world_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\client_menu.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\color_picker.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\combobox.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\config.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\config_storage\config_stream_view.hpp">
+      <Filter>Header Files\include\\skeet\config_storage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\config_storage\load_state.hpp">
+      <Filter>Header Files\include\\skeet\config_storage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\config_storage\named_storage.hpp">
+      <Filter>Header Files\include\\skeet\config_storage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\config_storage\native_blob.hpp">
+      <Filter>Header Files\include\\skeet\config_storage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\config_storage\native_blob_owner.hpp">
+      <Filter>Header Files\include\\skeet\config_storage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\config_storage\owner.hpp">
+      <Filter>Header Files\include\\skeet\config_storage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\config_storage\preserved.hpp">
+      <Filter>Header Files\include\\skeet\config_storage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\config_storage\preset_runtime.hpp">
+      <Filter>Header Files\include\\skeet\config_storage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\config_storage\presets.hpp">
+      <Filter>Header Files\include\\skeet\config_storage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\config_storage\settings_capture.hpp">
+      <Filter>Header Files\include\\skeet\config_storage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\config_storage\settings_owner.hpp">
+      <Filter>Header Files\include\\skeet\config_storage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\config_storage\settings_persistence.hpp">
+      <Filter>Header Files\include\\skeet\config_storage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\config_storage\storage.hpp">
+      <Filter>Header Files\include\\skeet\config_storage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\core.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\blur.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\blur_runtime.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\bullet_impact_command_owner.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\camera.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\camera_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\entity_render_state.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\entity_visibility.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\free_look_capture.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\free_look_owner.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\free_look_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\free_look_view.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\glow.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\glow_engine.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\harmless_molotov.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\harmless_molotov_owner.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\model_entity_relationships.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\model_hooks.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\model_render.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\model_render_lifecycle.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\model_render_sources.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\owner_lifecycle.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\owner_settings.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\player_auxiliary_hooks.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\player_opacity.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\player_opacity_owner.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\projectile_ribbons.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\receive_proxies.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\scope_owner.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\smoke_owner.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\view.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\view_dispatch.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\view_fov.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\visual_receive_owner.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\world.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\effects\world_callbacks.hpp">
+      <Filter>Header Files\include\\skeet\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\animation_startup_patterns.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_animation_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_client_state_aliases.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_command_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_entity_animation_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_esp_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_eye_adjustment_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_final_startup_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_game_state_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_history_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_hitbox_clip_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_hook_initialization.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_legit_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_loader_inspection_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_local_animation_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_material_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_misc_engine_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_module_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_packet_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_prediction_scratch_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_runtime_type_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_scene_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_script_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_shared_esp_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_skin_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_skin_receive_patches.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_startup_convars.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_visual_interface_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_window_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\build_world_bindings.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\client_class_factory_hooks.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\common_controls_initialization.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\decoded_offset.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\executable_pattern.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\first_startup_services.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\focus_overlay_hooks.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\forwarded_exports.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\frame_update.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\game_system.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\game_system_patch.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\game_window_proxy.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\hash_growth.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\hook_descriptor_storage.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\hook_descriptors.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\hook_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\hooks.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\initialization_failure.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\interface_call.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\interface_discovery.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\jobs.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\loaded_modules.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\map_game_system_owner.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\module_range_initialization.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\native_data_image.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\native_owner_registry_storage.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\native_service_table.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\netvar_initialization.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\netvars.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\offset_storage.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\opaque_native_word.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\overlay_build.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\owner_allocation.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\owner_registry.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\pe_exports.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\player_hook_family.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\preserved_initialization.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\rtti.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\scene_queries.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\scene_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\source_data_initialization.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\source_initialization_imports.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\startup_container_cleanup.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\startup_convars.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\startup_operations.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\startup_vector_cleanup.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\tier0_startup_exports.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\trace.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\engine\unload.hpp">
+      <Filter>Header Files\include\\skeet\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\c4.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\config.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\effects_config.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\entity_models.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\entity_overlay.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\extrapolation_preview.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\flag_table_initializer.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\flags.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\frame.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\frame_event_state.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\frame_events.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\frame_handler.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\grenade_auxiliary.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\grenade_damage.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\grenade_engine.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\grenade_environment.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\grenade_live.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\grenade_live_bindings.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\grenade_prediction.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\grenade_prediction_handler.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\grenade_warning_owner.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\hitbox_highlight.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\hitbox_highlight_engine.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\indicators.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\line_of_sight.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\map_entity_parser.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\model_color_config.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\offscreen.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\other_config.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\owner_runtime.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\packet_tracers.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\planted_bomb.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\player_draw.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\player_engine.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\player_geometry.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\player_overlay.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\player_runtime.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\projection.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\runtime_bindings.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\skeleton.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\sound_overlay.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\tablet_upgrade.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\user_message_handlers.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\weapon_icon.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\weapon_text.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\esp\world_engine.hpp">
+      <Filter>Header Files\include\\skeet\esp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\events\deaths.hpp">
+      <Filter>Header Files\include\\skeet\events</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\events\engine_event.hpp">
+      <Filter>Header Files\include\\skeet\events</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\events\event_dispatch.hpp">
+      <Filter>Header Files\include\\skeet\events</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\events\event_hook.hpp">
+      <Filter>Header Files\include\\skeet\events</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\events\event_name_storage.hpp">
+      <Filter>Header Files\include\\skeet\events</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\events\feature_listeners.hpp">
+      <Filter>Header Files\include\\skeet\events</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\events\game_events.hpp">
+      <Filter>Header Files\include\\skeet\events</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\events\hit_log.hpp">
+      <Filter>Header Files\include\\skeet\events</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\events\hit_marker.hpp">
+      <Filter>Header Files\include\\skeet\events</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\events\hit_marker_owner.hpp">
+      <Filter>Header Files\include\\skeet\events</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\events\registry.hpp">
+      <Filter>Header Files\include\\skeet\events</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\events\server_impacts.hpp">
+      <Filter>Header Files\include\\skeet\events</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\font_cache.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\font_metrics.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\gui_layout.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\hotkey_widget.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\hud\composite_handlers.hpp">
+      <Filter>Header Files\include\\skeet\hud</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\hud\composite_runtime.hpp">
+      <Filter>Header Files\include\\skeet\hud</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\hud\crosshair.hpp">
+      <Filter>Header Files\include\\skeet\hud</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\hud\feature_indicators.hpp">
+      <Filter>Header Files\include\\skeet\hud</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\hud\movement_indicators.hpp">
+      <Filter>Header Files\include\\skeet\hud</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\hud\observer_panel.hpp">
+      <Filter>Header Files\include\\skeet\hud</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\hud\penetration_reticle.hpp">
+      <Filter>Header Files\include\\skeet\hud</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\hud\penetration_reticle_owner.hpp">
+      <Filter>Header Files\include\\skeet\hud</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\hud\penetration_runtime.hpp">
+      <Filter>Header Files\include\\skeet\hud</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\hud\screen_overlay.hpp">
+      <Filter>Header Files\include\\skeet\hud</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\hud\screen_overlay_owner.hpp">
+      <Filter>Header Files\include\\skeet\hud</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\hud\screen_overlay_update.hpp">
+      <Filter>Header Files\include\\skeet\hud</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\hud\simple_owners.hpp">
+      <Filter>Header Files\include\\skeet\hud</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\hud\simple_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\hud</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\input\native_window_lifecycle.hpp">
+      <Filter>Header Files\include\\skeet\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\input\runtime.hpp">
+      <Filter>Header Files\include\\skeet\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\input\window_hook.hpp">
+      <Filter>Header Files\include\\skeet\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\angle_publication.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\animation_capture.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\animation_math.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\capture_speed.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\entity_preparation.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\entity_state.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\extrapolated_record.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\history.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\history_activation.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\history_alternative.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\history_animation_publish.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\history_build.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\history_configuration.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\history_environment.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\history_jobs.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\history_owner.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\history_receiver.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\history_resolver_update.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\history_runtime.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\history_selection.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\history_velocity_capture.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\history_velocity_reconstruction.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\history_yaw_side.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\interpolation.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\live_record_attachments.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\live_timeline.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\matrix_interpolation.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\native_history_boundaries.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\packet_capture.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\packet_direction.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\prediction_scope.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\receive_timing.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\record_selection.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\record_selection_live.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\record_validity.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\records.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\resolver_detection.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\timeline.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\update_capture.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\update_timing.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\velocity.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\lagcomp\velocity_validation.hpp">
+      <Filter>Header Files\include\\skeet\lagcomp</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\accuracy.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\accuracy_history.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\acquisition.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\command.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\command_source.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\config.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\historical_bones.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\historical_bones_live.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\manual_motion.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\owner.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\recoil_state.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\runtime.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\state.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\studio.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\target_selection.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\trace_filter.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\tracking.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\legit\trigger_trace.hpp">
+      <Filter>Header Files\include\\skeet\legit</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\listbox.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\anti_aim_extra_menu.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\anti_aim_menu.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\category_config.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\config_menu.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\legit_menu.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\misc_menu.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\players_menu.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\rage_clipboard.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\rage_menu.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\rage_weapon_groups.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\rage_weapon_selector.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\root_menu.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\scripts_menu.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\settings_menu_storage.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\skins_menu.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\startup_config_path.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\startup_data.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\startup_registry.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\startup_window.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\startup_window_name.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\window_events.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\window_lifetime.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu\window_render.hpp">
+      <Filter>Header Files\include\\skeet\menu</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu_tree.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\menu_window.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\auto_accept_hook.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\auto_accept_owner.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\automatic_weapons.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\automatic_weapons_owner.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\clan_tag.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\clan_tag_owner.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\command_owner.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\config.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\console_output_owner.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\disable_sv_pure_owner.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\fov.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\fov_owner.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\grenade_command.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\grenade_owner.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\knife_aim.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\knife_melee.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\knife_owner.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\knife_record.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\knife_runtime.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\logs.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\low_fps_runtime.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\native_text.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\network_console_handlers.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\network_fix.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\no_fall_damage.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\persistent_kill_feed.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\ping_spike.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\ping_spike_channel.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\purchase_log.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\purchase_log_owner.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\quick_switch.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\quick_switch_owner.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\rebuy_fix.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\rebuy_fix_owner.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\reveal_overwatch.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\reveal_ranks.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\runtime.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\settings_runtime.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\settings_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\unload.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\viewmodel_hooks.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\viewmodel_lag.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\viewmodel_lag_owner.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\viewmodel_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\zeus.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\misc\zeus_owner.hpp">
+      <Filter>Header Files\include\\skeet\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\acceleration.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\air_feedback.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\air_input.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\air_steering.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\air_strafe.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\air_velocity.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\air_wall_steering.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\blockbot.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\blockbot_owner.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\bunny_hop.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\collision.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\command_air.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\command_bindings.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\command_runtime.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\command_state.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\command_wrapper.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\duck_peek.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\easy_strafe.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\engine_collision.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\extrapolation.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\extrapolation_command.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\extrapolation_model.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\global_config.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\ground_contact.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\ground_phase.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\ground_phase_live.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\ground_speed.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\initialization.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\normalized_air_final.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\normalized_air_solver.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\normalized_air_wall.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\normalized_scout_gate.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\owner_lifecycle.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\player_air_gate.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\pre_speed.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\pre_speed_controller.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\pre_speed_live.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\pre_speed_probe.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\prediction.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\quick_peek.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\quick_stop.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\rage_stop.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\raw_air_solver.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\raw_scout_gate.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\release_binding.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\release_command.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\simulation.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\simulation_capture.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\simulation_collision.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\simulation_duck.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\simulation_environment.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\simulation_step.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\simulation_tick.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\simulation_velocity.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\slow_motion.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\speed_control.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\speed_control_live.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\steering_math.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\types.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\weapon_speed_phase.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement\z_hop.hpp">
+      <Filter>Header Files\include\\skeet\movement</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement_config.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\movement_runtime.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\multiselect.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\active_sound_retention.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\client_state_cvars.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\client_state_descriptor.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\client_state_hook_bindings.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\client_state_hook_family.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\client_state_hooks.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\client_state_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\command_owner.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\data_update_observers.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\data_update_receiver.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\exploit_acknowledgement.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\exploit_command_owner.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\exploit_controls.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\exploit_message.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\exploit_observers.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\exploit_owner.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\exploit_phase1.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\exploit_phase7.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\exploit_phase_state.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\exploit_recharge_receiver.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\exploit_runtime.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\incoming_update.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\packet_control.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\packet_dispatch.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\packet_duck_live.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\packet_owner.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\packet_scheduler.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\packet_world.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\receive_float_proxy.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\shared_esp.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\startup_user_messages.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\tick_update_dispatch.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\update_observers.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\network\user_message_runtime.hpp">
+      <Filter>Header Files\include\\skeet\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\players\menu_bindings.hpp">
+      <Filter>Header Files\include\\skeet\players</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\players\state.hpp">
+      <Filter>Header Files\include\\skeet\players</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\popup_menu.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\prediction\command.hpp">
+      <Filter>Header Files\include\\skeet\prediction</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\prediction\entity_update.hpp">
+      <Filter>Header Files\include\\skeet\prediction</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\prediction\history.hpp">
+      <Filter>Header Files\include\\skeet\prediction</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\prediction\observer_receiver.hpp">
+      <Filter>Header Files\include\\skeet\prediction</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\prediction\observer_registry.hpp">
+      <Filter>Header Files\include\\skeet\prediction</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\prediction\player_simulation.hpp">
+      <Filter>Header Files\include\\skeet\prediction</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\acquisition.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\acquisition_frame.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\action_state.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\aim_fire_event.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\ballistics.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\body_aim_probe.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\buffered_shot_repair.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\command_owner.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\command_phase2.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\command_phase6.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\command_phase8.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\command_source.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\engine_ballistics.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\entity_update.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\feedback_command_owner.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\feedback_entity_owner.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\feedback_owner.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\feedback_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\final_target_context.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\firing.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\group_storage.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\initialization.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\multiple_targets.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\owner.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\pending_shot_publication.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\point_penetration.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\post_firing.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\preamble.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\preamble_tail.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\prediction_mask_owner.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\prediction_mask_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\prediction_masks.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\record_candidates.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\reset.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\scan_hypotheses.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\scanning.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\scanning_chance.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\scanning_geometry.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\settings.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\shot_diagnostics.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\shot_feedback.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\shot_publication.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\single_target.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\spread.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\spread_miss_log.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\spread_storage.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\target_relationships.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\targeting.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\targeting_acquired.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\targeting_commit.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage\targeting_pipeline.hpp">
+      <Filter>Header Files\include\\skeet\rage</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage_config.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage_damage.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage_geometry.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage_hitboxes.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage_hitchance.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage_points.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage_policy.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage_safe_points.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage_safety.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage_segments.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage_selection.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\rage_shot.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\render\backend.hpp">
+      <Filter>Header Files\include\\skeet\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\render\backend_container.hpp">
+      <Filter>Header Files\include\\skeet\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\render\beam_geometry.hpp">
+      <Filter>Header Files\include\\skeet\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\render\device_listener.hpp">
+      <Filter>Header Files\include\\skeet\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\render\dpi_bridge.hpp">
+      <Filter>Header Files\include\\skeet\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\render\font_runtime.hpp">
+      <Filter>Header Files\include\\skeet\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\render\frame_runtime.hpp">
+      <Filter>Header Files\include\\skeet\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\render\icon_cache.hpp">
+      <Filter>Header Files\include\\skeet\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\render\menu_background.hpp">
+      <Filter>Header Files\include\\skeet\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\render\menu_window_assets.hpp">
+      <Filter>Header Files\include\\skeet\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\render\renderer_assets.hpp">
+      <Filter>Header Files\include\\skeet\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\render\startup_icons.hpp">
+      <Filter>Header Files\include\\skeet\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\render\startup_renderer.hpp">
+      <Filter>Header Files\include\\skeet\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\render_queue.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\resolver.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\resolver_runtime\attempts.hpp">
+      <Filter>Header Files\include\\skeet\resolver_runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\resolver_runtime\build.hpp">
+      <Filter>Header Files\include\\skeet\resolver_runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\resolver_runtime\build_validation.hpp">
+      <Filter>Header Files\include\\skeet\resolver_runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\resolver_runtime\environment_entry.hpp">
+      <Filter>Header Files\include\\skeet\resolver_runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\resolver_runtime\environment_probe.hpp">
+      <Filter>Header Files\include\\skeet\resolver_runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\resolver_runtime\environment_score.hpp">
+      <Filter>Header Files\include\\skeet\resolver_runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\resolver_runtime\environment_update.hpp">
+      <Filter>Header Files\include\\skeet\resolver_runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\resolver_runtime\hypotheses.hpp">
+      <Filter>Header Files\include\\skeet\resolver_runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\resolver_runtime\movement_fit.hpp">
+      <Filter>Header Files\include\\skeet\resolver_runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\resolver_runtime\next_attempt.hpp">
+      <Filter>Header Files\include\\skeet\resolver_runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\api_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\bridge.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\cjson.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\client_api.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\command_owner.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\compat.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\config_api.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\cvar_api.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\database.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\entity_api.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\entity_observer.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\files.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\flags.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\frame_sequence.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\frame_update.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\globals_api.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\initialize.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\lua_runtime_bindings.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\lua_text.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\manager.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\material_api.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\material_methods.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\material_registry.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\material_values.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\modules.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\owner.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\paint.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\panorama_api.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\plist_api.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\pre_send_observer.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\registry.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\renderer_api.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\required_module_storage.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\say_text_message.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\shutdown.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\source_executable_image.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\source_runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\startup_initializers.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\startup_materials.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\ui.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\ui_module.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\ui_type_storage.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\ui_values.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\v8_result_abi.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\vector.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\script\view_filter.hpp">
+      <Filter>Header Files\include\\skeet\script</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\scrollbar_render.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\agent_owner.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\agent_receive.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\agents.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\apply.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\catalog.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\catalog_sort.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\command.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\config.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\cosmetic_owners.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\gloves.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\inventory.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\inventory_owner.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\knife_precache.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\masks.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\model_resources.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\models.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\native_agents.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\native_catalog.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\native_entity_cosmetics.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\native_inventory.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\native_schema.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\native_sequence_update.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\refresh.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\runtime_owner.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\sequence_owner.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\sequence_receive.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\sequences.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\stattrak.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\skins\widget_setters.hpp">
+      <Filter>Header Files\include\\skeet\skins</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\text_metrics.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\textbox.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\ui_catalog.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\weapon\fire_state.hpp">
+      <Filter>Header Files\include\\skeet\weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="include\skeet\widgets.hpp">
+      <Filter>Header Files\include\\skeet</Filter>
+    </ClInclude>
+    <ClInclude Include="includes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lagcomp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lagrecord.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="movement.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="penetration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pred.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="render.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resolver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="script\cjson_internal.hpp">
+      <Filter>Source Files\script</Filter>
+    </ClInclude>
+    <ClInclude Include="script\client_detail.hpp">
+      <Filter>Source Files\script</Filter>
+    </ClInclude>
+    <ClInclude Include="script\detail.hpp">
+      <Filter>Source Files\script</Filter>
+    </ClInclude>
+    <ClInclude Include="script\entity_detail.hpp">
+      <Filter>Source Files\script</Filter>
+    </ClInclude>
+    <ClInclude Include="script\files_detail.hpp">
+      <Filter>Source Files\script</Filter>
+    </ClInclude>
+    <ClInclude Include="script\initialize_detail.hpp">
+      <Filter>Source Files\script</Filter>
+    </ClInclude>
+    <ClInclude Include="script\manager_detail.hpp">
+      <Filter>Source Files\script</Filter>
+    </ClInclude>
+    <ClInclude Include="script\panorama_detail.hpp">
+      <Filter>Source Files\script</Filter>
+    </ClInclude>
+    <ClInclude Include="script\registry_catalog.inc">
+      <Filter>Source Files\script</Filter>
+    </ClInclude>
+    <ClInclude Include="script\renderer_detail.hpp">
+      <Filter>Source Files\script</Filter>
+    </ClInclude>
+    <ClInclude Include="script\required_module_data.inc">
+      <Filter>Source Files\script</Filter>
+    </ClInclude>
+    <ClInclude Include="script\ui_values_detail.hpp">
+      <Filter>Source Files\script</Filter>
+    </ClInclude>
+    <ClInclude Include="shots.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="skins.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\luajit\dynasm\dasm_arm.h">
+      <Filter>Source Files\third_party</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\luajit\dynasm\dasm_arm64.h">
+      <Filter>Source Files\third_party</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\luajit\dynasm\dasm_mips.h">
+      <Filter>Source Files\third_party</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\luajit\dynasm\dasm_ppc.h">
+      <Filter>Source Files\third_party</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\luajit\dynasm\dasm_proto.h">
+      <Filter>Source Files\third_party</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\luajit\dynasm\dasm_x86.h">
+      <Filter>Source Files\third_party</Filter>
+    </ClInclude>
+    <ClInclude Include="util\address.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="visuals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="aimbot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bonesetup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="chams.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="client.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="csgo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="entry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="events.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="grenades.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\game\netchannel.cpp">
+      <Filter>Source Files\hooks\game</Filter>
+    </ClCompile>
+    <ClCompile Include="hooks\hooks.cpp">
+      <Filter>Source Files\hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="hvh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="knifebot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lagcomp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="math.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="menu\button.cpp">
+      <Filter>Source Files\menu</Filter>
+    </ClCompile>
+    <ClCompile Include="menu\callbacks.cpp">
+      <Filter>Source Files\menu</Filter>
+    </ClCompile>
+    <ClCompile Include="menu\checkbox.cpp">
+      <Filter>Source Files\menu</Filter>
+    </ClCompile>
+    <ClCompile Include="menu\colorpicker.cpp">
+      <Filter>Source Files\menu</Filter>
+    </ClCompile>
+    <ClCompile Include="menu\config.cpp">
+      <Filter>Source Files\menu</Filter>
+    </ClCompile>
+    <ClCompile Include="menu\dropdown.cpp">
+      <Filter>Source Files\menu</Filter>
+    </ClCompile>
+    <ClCompile Include="menu\edit.cpp">
+      <Filter>Source Files\menu</Filter>
+    </ClCompile>
+    <ClCompile Include="menu\form.cpp">
+      <Filter>Source Files\menu</Filter>
+    </ClCompile>
+    <ClCompile Include="menu\gui.cpp">
+      <Filter>Source Files\menu</Filter>
+    </ClCompile>
+    <ClCompile Include="menu\keybind.cpp">
+      <Filter>Source Files\menu</Filter>
+    </ClCompile>
+    <ClCompile Include="menu\multidropdown.cpp">
+      <Filter>Source Files\menu</Filter>
+    </ClCompile>
+    <ClCompile Include="menu\players.cpp">
+      <Filter>Source Files\menu</Filter>
+    </ClCompile>
+    <ClCompile Include="menu\slider.cpp">
+      <Filter>Source Files\menu</Filter>
+    </ClCompile>
+    <ClCompile Include="menu\startup_window.cpp">
+      <Filter>Source Files\menu</Filter>
+    </ClCompile>
+    <ClCompile Include="misc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="movement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="penetration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pred.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="render.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="resolver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="script\api_runtime_owner.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\bridge.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\cjson_buffer.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\cjson_config.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\cjson_decode.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\cjson_encode.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\cjson_float.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\cjson_module.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\cjson_number.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\client_callbacks.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\client_console.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\client_console_dispatch.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\client_diagnostics.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\client_engine_events.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\client_logging.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\client_module.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\client_queries.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\client_tracing.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\client_unsafe.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\command_owner.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\compat.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\config_api.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\cvar_api.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\cvar_callbacks.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\database.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\database_codec.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\database_location.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\database_storage.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\entity_bindings.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\entity_classes.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\entity_datamap.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\entity_geometry.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\entity_module.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\entity_observer.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\entity_properties.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\entity_queries.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\entity_receive.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\files.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\files_path.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\files_read.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\files_write.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\flags.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\frame_update.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\globals_api.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\initialize.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\initialize_builtins.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\initialize_cipher.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\initialize_context.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\initialize_loaders.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\initialize_modules.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\lua_runtime_bindings.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\lua_text.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\manager.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\manager_configuration.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\manager_discovery.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\manager_encoding.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\manager_files.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\manager_records.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\manager_runtime.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\material_api.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\material_bindings.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\material_methods.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\material_override.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\material_registry.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\material_values.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\modules.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\owner.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\paint.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\panorama_api.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\panorama_call.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\panorama_engine.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\panorama_exports.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\panorama_imports.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\panorama_values.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\plist_api.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\pre_send_observer.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\registry.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\registry_data.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\renderer_api.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\renderer_geometry.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\renderer_images.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\renderer_text.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\required_module_storage.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\say_text_message.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\shutdown.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\source_executable_image.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\source_runtime_owner.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\startup_initializers.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\startup_materials.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\ui.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\ui_constructors.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\ui_module.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\ui_type_storage.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\ui_values.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\ui_values_set.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\vector.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="script\view_filter.cpp">
+      <Filter>Source Files\script</Filter>
+    </ClCompile>
+    <ClCompile Include="shots.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="skins.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\miniz\miniz.c">
+      <Filter>Source Files\third_party</Filter>
+    </ClCompile>
+    <ClCompile Include="util\luajit_compat.cpp">
+      <Filter>Source Files\util</Filter>
+    </ClCompile>
+    <ClCompile Include="visuals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
