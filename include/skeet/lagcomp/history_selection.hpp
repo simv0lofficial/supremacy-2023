@@ -21,11 +21,6 @@ struct HistorySelectionBindings {
     float current_time; // actual *43467EB8
     float interpolation; // actual43476928
     std::int32_t maximum_unlag_ms; // actual43468230
-    rage::ExperimentalSwitch jitter_fix{}, animation_rebuild{}, resolver_corrections{};
-    bool use_captured_endpoint_pose() const noexcept {
-        return extrapolation.validate_record || extrapolation.rebuild_pose || jitter_fix ||
-               animation_rebuild || resolver_corrections;
-    }
 };
 // Complete4336C53B for a valid nonzero player networkable index. selected_source, if requested,
 // mirrors destination.field_00 without truncating the portable source pointer.

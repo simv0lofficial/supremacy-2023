@@ -10,7 +10,6 @@ class TargetTraceEntities;
 }
 
 namespace skeet::rage {
-struct ExperimentalDamageContext;
 
 // Per-record settings copied by433543BF into evaluation+BC..E3. Fields unused
 // by the scanner stay with the scheduler's canonical evaluation owner.
@@ -68,7 +67,6 @@ struct ScanContext {
     // The43470404 rejection predicate is recovered source, per-call storage.
     void* const* trace_filter_vtable;
     const anti_aim::TargetTraceEntities& trace_entities;
-    const ExperimentalDamageContext* damage_context = nullptr;
 };
 struct ScanRequest {
     void* target_player;

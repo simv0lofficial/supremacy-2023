@@ -71,12 +71,6 @@
 #include "skeet/rage/targeting_commit.hpp"
 #include <limits>
 #include "skeet/rage/command_owner.hpp"
-#include "skeet/rage/damage_model.hpp"
-#include "skeet/rage/experimental_validation.hpp"
-#include "skeet/rage/jitter_log.hpp"
-#include "skeet/rage/shot_log.hpp"
-#include "skeet/lagcomp/record_validity.hpp"
-#include "skeet/movement/extrapolation_model.hpp"
 #include "skeet/rage/final_target_context.hpp"
 #include "skeet/rage/post_firing.hpp"
 #include "skeet/rage/command_phase2.hpp"
@@ -2718,8 +2712,7 @@ ScanContext refresh_scanner(const ScanContext& seed, PreambleState& state,
             seed.update_attachments,
             seed.teammate_convars,
             seed.trace_filter_vtable,
-            seed.trace_entities,
-            seed.damage_context};
+            seed.trace_entities};
 }
 ScanContext refresh_projected_scanner(const ScanContext& seed, const client::CommandFrame& frame,
                                       const lagcomp::EntityPreparationContext& preparation) {
@@ -2747,8 +2740,7 @@ ScanContext refresh_projected_scanner(const ScanContext& seed, const client::Com
             seed.update_attachments,
             seed.teammate_convars,
             seed.trace_filter_vtable,
-            seed.trace_entities,
-            seed.damage_context};
+            seed.trace_entities};
 }
 BodyAimProbeContext refresh_projected_body(const BodyAimProbeContext& seed,
                                            const ScanContext& scanner,
@@ -2794,26 +2786,20 @@ AcquisitionBranchFrameBindings::AcquisitionBranchFrameBindings(
       extrapolation{
           records_seed.extrapolation.players,     extrapolation_preparation,
           records_seed.extrapolation.attachments, records_seed.extrapolation.bones,
-          records_seed.extrapolation.movement,    records_seed.extrapolation.prediction_limit,
-          records_seed.extrapolation.validate_record, records_seed.extrapolation.rebuild_pose},
+          records_seed.extrapolation.movement,    records_seed.extrapolation.prediction_limit},
       history_extrapolation{records_seed.history.extrapolation.players,
                             history_preparation,
                             records_seed.history.extrapolation.attachments,
                             records_seed.history.extrapolation.bones,
                             records_seed.history.extrapolation.movement,
-                            records_seed.history.extrapolation.prediction_limit,
-                            records_seed.history.extrapolation.validate_record,
-                            records_seed.history.extrapolation.rebuild_pose},
+                            records_seed.history.extrapolation.prediction_limit},
       history{history_extrapolation,
               records_seed.history.alternative,
               records_seed.history.rotation,
               records_seed.history.matrix_scratch,
               clock,
               records_seed.history.interpolation,
-              records_seed.history.maximum_unlag_ms,
-              records_seed.history.jitter_fix,
-              records_seed.history.animation_rebuild,
-              records_seed.history.resolver_corrections},
+              records_seed.history.maximum_unlag_ms},
       preparation{targeting,
                   preparation_seed.global,
                   preparation_seed.weapon_settings,
@@ -3052,19 +3038,6 @@ void prepare_and_submit_target_records(PreambleState& state, PreambleResult& pre
                 slot.requested_tick = -1;
                 continue;
             }
-        }
-        if (bindings.extrapolation.validate_record) {
-            const lagcomp::HistoryTickTiming timing{
-                bindings.history.current_time, field<float>(&frame, 0x198),
-                bindings.history.interpolation, bindings.interval,
-                bindings.history.maximum_unlag_ms, std::bit_cast<std::int32_t>(frame.field_d4),
-                std::bit_cast<std::int32_t>(frame.field_18c)};
-            if (!lagcomp::record_time_valid(slot.record, timing) ||
-                !lagcomp::record_geometry_valid(slot.record) ||
-                lagcomp::record_precedes_discontinuity(
-                    bindings.players.get(candidate.entity_index)->history,
-                    slot.record.header.simulation_tick))
-                continue;
         }
         slot.extrapolated = slot.extrapolation_ticks > 0;
         auto scan = slot.settings.scan_policy();
@@ -3371,11 +3344,9 @@ struct ActionHistoryFrame {
           preparation(seed.extrapolation.preparation),
           extrapolation{seed.extrapolation.players,     preparation,
                         seed.extrapolation.attachments, seed.extrapolation.bones,
-                        seed.extrapolation.movement,    seed.extrapolation.prediction_limit,
-                        seed.extrapolation.validate_record, seed.extrapolation.rebuild_pose},
+                        seed.extrapolation.movement,    seed.extrapolation.prediction_limit},
           history{extrapolation, seed.alternative,   seed.rotation,        seed.matrix_scratch,
-                  clock,         seed.interpolation, seed.maximum_unlag_ms, seed.jitter_fix,
-                  seed.animation_rebuild, seed.resolver_corrections},
+                  clock,         seed.interpolation, seed.maximum_unlag_ms},
           live_budget(budget) {
         preparation.global_frame = std::bit_cast<std::uint32_t>(clock);
         preparation.current_timing =
@@ -3933,7 +3904,8 @@ void process_rage_command(CommandOwner& owner, client::CommandFrame& original, v
     if (acquired)
         batch = rank_completed_target_candidates(storage.candidates, state.completed, state.flags,
                                                  state.target_mask, scanner.targeting);
-    const auto final_target = owner.final_target.with_scan(scanner);
+    const FinalTargetContextBindings final_target{scanner, owner.final_target.current_bone_counter,
+                                                  owner.settings_menu, owner.final_target.jobs};
     auto choice = select_acquired_target_for_shot(batch, storage, frame, state, final_target);
     RageShotCommitState commit{state.flags, owner.preamble.scheduler_flags,
                                owner.preamble.selected_marker, send_packet};
@@ -4317,156 +4289,6 @@ void update_rage_entities(const EntityUpdateBindings& bindings, void* local,
 }
 
 // ============================================================================
-
-// ============================================================================
-// Subcomponent: damage_model.cpp
-// ============================================================================
-
-namespace skeet::rage {
-namespace {
-/* [removed duplicate read] */
-float convar_float(const void* object) {
-    for (unsigned depth = 0; object && depth != 16; ++depth) {
-        const auto* parent = read<const void*>(object, 0x1C);
-        if (parent == object)
-            return std::bit_cast<float>(read<std::uint32_t>(object, 0x2C) ^
-                                        std::uint32_t(reinterpret_cast<std::uintptr_t>(object)));
-        object = parent;
-    }
-    return std::numeric_limits<float>::quiet_NaN();
-}
-}
-float bullet_health_damage(float raw, std::int32_t group, const BulletDamageModel& model) noexcept {
-    if (!model.valid || group < 0 || group > 8 || !std::isfinite(raw) || raw < 0 ||
-        !std::isfinite(model.armor_ratio) || model.armor_ratio < 0 || model.armor_ratio > 2 ||
-        !std::isfinite(model.head_multiplier) || model.head_multiplier < 0 ||
-        !std::isfinite(model.head_scale) || model.head_scale < 0 ||
-        !std::isfinite(model.body_scale) || model.body_scale < 0)
-        return 0;
-    if (model.weapon_id == 31)
-        return raw;
-    float damage = raw;
-    if (group == 1)
-        damage = (raw * model.head_multiplier) *
-                 (model.head_scale * (model.heavy_armor ? 0.5f : 1.0f));
-    else if (group >= 2 && group <= 8)
-        damage = (raw * (group == 3 ? 1.25f : group == 6 || group == 7 ? 0.75f : 1.0f)) *
-                 model.body_scale;
-    const bool armored = model.armor > 0 &&
-        (model.heavy_armor || group == 0 || (group >= 2 && group <= 5) ||
-         ((group == 1 || group == 8) && model.helmet));
-    if (armored) {
-        const float ratio = (model.armor_ratio * 0.5f) * (model.heavy_armor ? 0.2f : 1.0f);
-        const bool cooperative_armor = model.heavy_armor && model.cooperative;
-        const float bonus = cooperative_armor ? 0.33f : 0.5f;
-        const float scale = cooperative_armor ? 0.25f : 1.0f;
-        const float health = damage * ratio;
-        const float absorbed = (damage - health) * (scale * bonus);
-        damage = absorbed > float(model.armor) ? damage - float(model.armor) / bonus : health;
-    }
-    return std::isfinite(damage) && damage >= 0 ? damage : 0;
-}
-std::int32_t damage_lower_bound(float damage) noexcept {
-    if (!std::isfinite(damage) || damage <= 0 || double(damage) >= INT32_MAX)
-        return 0;
-    return std::int32_t(damage);
-}
-ExperimentalDamageContext DamageRulesCache::capture(bool enabled, void* cvar,
-                                                      const void* weapon_data,
-                                                      std::ptrdiff_t heavy_offset, int game_type) {
-    ExperimentalDamageContext result;
-    result.enabled = enabled;
-    if (!enabled)
-        return result;
-    constexpr const char* names[]{"mp_damage_scale_ct_head", "mp_damage_scale_ct_body",
-                                  "mp_damage_scale_t_head", "mp_damage_scale_t_body"};
-    if (owner_ != cvar) {
-        owner_ = cvar;
-        variables_ = {};
-        warned_ = false;
-    }
-    result.valid = cvar && weapon_data && heavy_offset > 0;
-    for (unsigned i = 0; i < variables_.size(); ++i) {
-        if (cvar && !variables_[i])
-            variables_[i] = engine::invoke<void*>(cvar, 15, names[i]);
-        result.scales[i] = convar_float(variables_[i]);
-        result.valid &= std::isfinite(result.scales[i]) && result.scales[i] >= 0;
-    }
-    result.heavy_armor_offset = heavy_offset;
-    result.head_multiplier = weapon_data ? read<float>(weapon_data, 0xF4) : NAN;
-    result.cooperative = game_type == 4;
-    result.valid &= std::isfinite(result.head_multiplier) && result.head_multiplier >= 0;
-    if (!result.valid && cvar && !warned_) {
-        using Print = void(__cdecl*)(void*, const char*, ...);
-        const auto table = *static_cast<void***>(cvar);
-        reinterpret_cast<Print>(table[26])(
-            cvar, "%s", "[gamesense] Experimental RAGE: damage inputs unavailable; shot rejected.\n");
-        warned_ = true;
-    }
-    return result;
-}
-BulletDamageModel capture_damage_model(BallisticEngine& engine, BallisticEntity target,
-                                        const ExperimentalDamageContext& context,
-                                        const BallisticQuery& bullet) {
-    const auto info = engine.entity_info(target);
-    const auto index = info.team == 3 ? 0u : 2u;
-    const bool valid = context.enabled && context.valid && target &&
-                       (info.team == 2 || info.team == 3) &&
-                       std::isfinite(bullet.base_damage) && bullet.base_damage > 0 &&
-                       std::isfinite(bullet.range) && bullet.range > 0 &&
-                       std::isfinite(bullet.range_modifier) && bullet.range_modifier > 0 &&
-                       std::isfinite(bullet.penetration) && bullet.penetration >= 0;
-    const bool heavy = valid && read<std::uint8_t>(reinterpret_cast<const void*>(
-        std::uintptr_t(target)), context.heavy_armor_offset) != 0;
-    return {bullet.armor_ratio, context.head_multiplier, context.scales[index],
-            context.scales[index + 1], info.armor, bullet.weapon_id, info.helmet != 0,
-            heavy, context.cooperative, valid};
-}
-DamageIntersection intersect_damage_ray(const RageVector& origin, const RageVector& direction,
-                                         float range, std::span<const RageScanHitbox> hitboxes,
-                                         const RageBoxClipper& clipper) {
-    DamageIntersection result;
-    if (!std::isfinite(range) || range <= 0)
-        return result;
-    for (unsigned i = 0; i < 3; ++i)
-        if (!std::isfinite(origin[i]) || !std::isfinite(direction[i]))
-            return result;
-    RageRay ray{origin, {direction[0] * range, direction[1] * range, direction[2] * range}};
-    float nearest = 1;
-    for (std::size_t i = 0; i < hitboxes.size(); ++i) {
-        const auto& box = hitboxes[i];
-        RageTrace trace; trace.fraction = 1;
-        const int hit = box.capsule.radius > 0
-                            ? clip_rage_ray_to_capsule(ray, box.capsule, trace)
-                            : clipper.clip ? clipper.clip(clipper.context, ray, box, trace) : -1;
-        if (hit < 0 || !std::isfinite(trace.fraction) || trace.fraction < 0 ||
-            trace.fraction >= nearest)
-            continue;
-        nearest = trace.fraction;
-        result.hitbox = int(i); result.hitgroup = box.hitgroup; result.found = true;
-        for (unsigned axis = 0; axis < 3; ++axis)
-            result.position[axis] = origin[axis] + ray.delta[axis] * nearest;
-    }
-    return result;
-}
-DamageRayResult trace_damage_ray(BallisticEngine& engine, BallisticEntity source,
-                                  const RageVector& origin, const RageVector& direction,
-                                  std::span<const RageScanHitbox> geometry,
-                                  const RageBoxClipper& clipper, const BallisticFilter& filter,
-                                  BallisticQuery bullet, const BulletDamageModel& model) {
-    DamageRayResult result;
-    if (!model.valid)
-        return result;
-    result.hit = intersect_damage_ray(origin, direction, bullet.range, geometry, clipper);
-    if (!result.hit.found)
-        return result;
-    trace_ballistic_bullet(engine, source, origin, result.hit.position, filter, bullet);
-    result.health_damage = bullet_health_damage(bullet.damage, result.hit.hitgroup, model);
-    result.flags = bullet.flags;
-    return result;
-}
-} // namespace skeet::rage
-
 // Subcomponent: final_target_context.cpp
 // ============================================================================
 
@@ -4660,45 +4482,11 @@ std::int32_t trace_teammate(const Producer& producer, FinalHitchanceContext& con
 }
 }
 
-bool FinalTargetContextBindings::validates_records() const noexcept {
-    return history && bool(history->extrapolation.validate_record);
-}
-bool FinalTargetContextBindings::precise_damage() const noexcept {
-    return scan.damage_context && scan.damage_context->enabled;
-}
-bool FinalTargetContextBindings::full_seed_hitchance() const noexcept {
-    return preamble && bool(preamble->settings.experimental(ExperimentalRageOption::hitchance));
-}
-
 bool evaluate_final_target(client::CommandFrame& frame, PreambleState& state,
                            const TargetCandidate& candidate,
                            const AcquisitionEvaluation& evaluation, std::uint32_t& context_flags,
                            const FinalTargetContextBindings& bindings, float& chance) {
-    const bool precise_damage = bindings.precise_damage();
-    const bool full_seed_hitchance = bindings.full_seed_hitchance();
-    const bool precise_samples = precise_damage || full_seed_hitchance;
-    const bool validates_records = bindings.validates_records();
-    if (validates_records) {
-        const auto& history = *bindings.history;
-        const lagcomp::HistoryTickTiming timing{
-            history.current_time, read<float>(&frame, 0x198), history.interpolation,
-            bindings.scan.preparation.entity.interval, history.maximum_unlag_ms,
-            read<std::int32_t>(&frame, 0xD4), std::bit_cast<std::int32_t>(frame.field_18c)};
-        const auto* player = candidate.entity_index && candidate.entity_index <= 64
-                                 ? bindings.scan.players.get(candidate.entity_index) : nullptr;
-        if (!player || !experimental_target_valid(
-                           candidate, evaluation.record, player->history, timing, frame.origin_dc,
-                           frame.spread_d0, frame.inaccuracy_c4,
-                           std::bit_cast<std::int32_t>(evaluation.settings.words[5]),
-                           std::bit_cast<float>(evaluation.settings.words[6]))) {
-            chance = 0;
-            return false;
-        }
-    }
-    const bool stock_revolver_bypass = (context_flags & 0x10U) && frame.weapon_id_d8 == 64 &&
-                                       (frame.flags & 0x40U);
-    if (!precise_samples && ((frame.flags & 0x4000U) ||
-        (validates_records && (!(context_flags & 0x10U) || stock_revolver_bypass)))) {
+    if (frame.flags & 0x4000U) {
         chance = 1.0f;
         return true;
     }
@@ -4706,29 +4494,6 @@ bool evaluate_final_target(client::CommandFrame& frame, PreambleState& state,
     auto* target = engine::invoke<void*>(scan.targeting.entity_list, 3, candidate.entity_index);
     if (!target)
         return false;
-    std::unique_ptr<CompleteSpread> complete;
-    if (precise_samples) {
-        if ((precise_damage && !scan.damage_context->valid) || !bindings.preamble) {
-            chance = 0;
-            return false;
-        }
-        const auto& preamble = *bindings.preamble;
-        SpreadParameters parameters{
-            std::uint32_t(frame.weapon_id_d8), std::int32_t(frame.field_b0), frame.spread_d0,
-            context_flags & 8U ? std::bit_cast<float>(frame.field_160) - frame.spread_d0
-                               : frame.inaccuracy_c4,
-            std::bit_cast<float>(frame.field_100), frame.pellet_count_19c,
-            preamble.shotgun_patterns, frame.weapon_kind_124};
-        // weapon_accuracy_nospread removes dispersion, not the damage test.
-        if (frame.flags & 0x4000U)
-            parameters.spread = parameters.inaccuracy = 0;
-        complete = std::make_unique<CompleteSpread>();
-        if (!prepare_complete_spread(*complete, parameters, preamble.spread_tables,
-                                      preamble.random, preamble.pattern, preamble.trigonometry)) {
-            chance = 0;
-            return false;
-        }
-    }
     final_target_detail::Producer producer{bindings, frame, state, {}, nullptr};
     FinalHitchanceContext context{
         .ballistics = scan.ballistics,
@@ -4764,9 +4529,6 @@ bool evaluate_final_target(client::CommandFrame& frame, PreambleState& state,
         .samples = state.spread.primary,
         .settings_menu = bindings.settings_menu,
         .jobs = bindings.jobs,
-        .full_seed_hitchance = full_seed_hitchance,
-        .damage_context = scan.damage_context,
-        .complete_spread = complete.get(),
     };
     return evaluate_target_hitchance(context, candidate, evaluation.record,
                                      std::bit_cast<std::int32_t>(evaluation.settings.words[5]),
@@ -5503,22 +5265,14 @@ void publish_shot(PreambleState&, PreambleResult& preamble, AcquisitionStorage& 
     auto& evaluation = storage.evaluations[std::size_t(&selected - storage.candidates.data())];
     auto* target =
         engine::invoke<void*>(b.movement.targeting.entity_list, 3, selected.entity_index);
-    std::int32_t diagnostic_id = 0;
-    bool pending = false;
     if (target) {
         if (!frame.field_1a0)
             capture_shot_diagnostics(frame, local, target, b.diagnostics);
         const auto index = b.shot_index % 150;
-        diagnostic_id = index;
         b.shot_index = sum(b.shot_index, 1);
         dispatch_aim_fire_event(b.scripts, b.players, frame, selected, evaluation, index);
-        pending = publish_pending_shot(
-            frame, synchronize_evaluation_state(selected, evaluation), index, b.pending_shots);
-        if (b.pending_shots.jitter_fix) {
-            if (const auto* feedback = feedback_owner_runtime(b.pending_shots.active))
-                log_jitter_fire(*b.players.get(selected.entity_index), feedback->normal_log,
-                                selected, evaluation, index, frame.command_number_ac, pending);
-        }
+        publish_pending_shot(frame, synchronize_evaluation_state(selected, evaluation), index,
+                             b.pending_shots);
         publish_accepted_shot_model(frame, selected, evaluation.record, b.shot_models);
         if (frame.field_1d4 == 1 && selected.primary.damage < selected.health) {
             const RageVector delta{selected.primary.position[0] - frame.origin_dc[0],
@@ -5555,10 +5309,6 @@ void publish_shot(PreambleState&, PreambleResult& preamble, AcquisitionStorage& 
             sum(std::bit_cast<std::int32_t>(frame.field_18c), read<std::int32_t>(&frame, 0x144)))
             command.tick = corrected;
     }
-    if (target)
-        if (const auto* feedback = feedback_owner_runtime(b.pending_shots.active))
-            log_shot_fire(feedback->spread_log_settings, feedback->normal_log, frame, command,
-                          selected, evaluation, diagnostic_id, pending);
     auto& player = b.players.get(selected.entity_index)->native;
     write(&player, 0xA6, std::uint16_t(read<std::uint16_t>(&player, 0xA6) + 1u));
 }
@@ -5597,7 +5347,8 @@ PreambleTailEntry continue_after_target_firing(PreambleState& state, PreambleRes
         float chance = 0.0f;
         TargetFrameBindings current(b.prediction, b.scanner, frame, b.preamble.prediction_time,
                                     b.preamble.scheduler_flags);
-        const auto final = b.final_target.with_scan(current.scanner);
+        const FinalTargetContextBindings final{current.scanner, b.final_target.current_bone_counter,
+                                               b.final_target.settings_menu, b.final_target.jobs};
         if (evaluate_final_target(frame, state, *leading, *evaluation, state.flags, final, chance))
             state.flags |= 0x180U;
         state.flags &= ~8U;
@@ -5876,7 +5627,9 @@ void predict_stop(PreambleState& state, PreambleResult& preamble, AcquisitionSto
         float chance = 1.0f;
         TargetFrameBindings after_scan(b.prediction, b.scanner, frame, b.preamble.prediction_time,
                                        b.preamble.scheduler_flags);
-        const auto final = b.final_target.with_scan(after_scan.scanner);
+        const FinalTargetContextBindings final{after_scan.scanner,
+                                               b.final_target.current_bone_counter,
+                                               b.final_target.settings_menu, b.final_target.jobs};
         if (evaluate_final_target(frame, state, candidate, evaluation, state.flags, final,
                                   chance)) {
             state.flags |= 0x180U;
@@ -6820,12 +6573,6 @@ struct Window {
     float low, high;
     std::int32_t corrected, upper;
 };
-lagcomp::HistoryTickTiming candidate_timing(const client::CommandFrame& frame,
-                                            const RecordCandidateBindings& bindings) noexcept {
-    return {bindings.current_time, field<float>(&frame, 0x198), bindings.interpolation,
-            bindings.interval, bindings.maximum_unlag_ms, field<std::int32_t>(&frame, 0xd4),
-            integer(frame.field_18c)};
-}
 Window candidate_window(const client::CommandFrame& frame,
                         const RecordCandidateBindings& bindings) noexcept {
     const float maximum = converted(bindings.maximum_unlag_ms) * 0.001F;
@@ -6833,7 +6580,11 @@ Window candidate_window(const client::CommandFrame& frame,
         minimum_number(field<float>(&frame, 0x198) + bindings.interpolation, maximum);
     const float low = ((bindings.current_time - delay) - 0.2F) / bindings.interval;
     const float high = ((bindings.current_time - delay) + 0.2F) / bindings.interval;
-    return {low, high, lagcomp::history_tick_window(candidate_timing(frame, bindings)).corrected,
+    const lagcomp::HistoryTickTiming timing{
+        bindings.current_time,   field<float>(&frame, 0x198), bindings.interpolation,
+        bindings.interval,       bindings.maximum_unlag_ms,   field<std::int32_t>(&frame, 0xd4),
+        integer(frame.field_18c)};
+    return {low, high, lagcomp::history_tick_window(timing).corrected,
             add(field<std::int32_t>(&frame, 0x144), integer(frame.field_18c))};
 }
 std::int32_t extrapolated_tick(const client::CommandFrame& frame, void* target,
@@ -7023,21 +6774,16 @@ void append_target_record_ticks(const client::CommandFrame& frame, void* target,
     const auto raw_first = add(ceiling_tick(window.low), 1);
     const auto first = std::max(window.corrected, raw_first);
     const auto last = std::min(window.upper, sub(floor_tick(window.high), 1));
-    const bool validate = bool(bindings.validate_record);
-    const auto timing = candidate_timing(frame, bindings);
     std::uint32_t mask = 0;
     bool extrapolate = false;
     auto previous = player.native.cached_origin;
     for (std::uint32_t age = 0; age < ring.count; ++age) {
-        const auto& sample = ring.at(age);
-        const auto& record = sample.header;
-        if (validate && lagcomp::record_precedes_discontinuity(ring, record.simulation_tick))
-            break;
+        const auto& record = ring.at(age).header;
         const auto& origin = record.origin;
         const float dx = origin[0] - previous[0], dy = origin[1] - previous[1],
                     dz = origin[2] - previous[2];
         if ((dy * dy + dx * dx) + dz * dz > 4096.0F) {
-            if (!validate && !mask)
+            if (!mask)
                 mask = 1;
             break;
         }
@@ -7047,21 +6793,13 @@ void append_target_record_ticks(const client::CommandFrame& frame, void* target,
                     extrapolate = true;
                 break;
             }
-            if (!validate || (lagcomp::record_time_valid(sample, timing) &&
-                              lagcomp::record_geometry_valid(sample)))
-                mask |= 1U << (age & 31U);
+            mask |= 1U << (age & 31U);
         }
         previous = origin;
     }
     if (!mask) {
         if (!extrapolate || ring.count < 2 || (ring.at(0).header.flags & 0x200U))
             return;
-        if (bindings.rebuild_pose) {
-            const auto ticks = std::int64_t(first) - ring.at(0).header.simulation_tick;
-            if (ticks > 0 && ticks <= maximum_pose_extrapolation_ticks && first <= last)
-                output.push_back(first);
-            return;
-        }
         const auto tick = extrapolated_tick(frame, target, player, bindings, window);
         if (tick != -1)
             output.push_back(tick);
@@ -7163,9 +6901,15 @@ template <class T> T& pointed(ClientRuntimeStorage& s, std::uint32_t identity) {
         throw std::invalid_argument("RAGE requires its actual published engine alias");
     return *pointer;
 }
-/* [removed duplicate convar_integer] */
 bool convar_boolean(const void* variable) {
-    return convar_integer(variable) != 0;
+    for (;;) {
+        const auto parent = read<const void*>(variable, 0x1C);
+        if (parent == variable)
+            break;
+        variable = parent;
+    }
+    return read<std::uint32_t>(variable, 0x30) !=
+           std::uint32_t(reinterpret_cast<std::uintptr_t>(variable));
 }
 engine::OwnerRegistryBinding owner_registry(ClientRuntimeStorage& s, std::uint32_t identity) {
     return {s.owner_registries().at(identity), s.memory()};
@@ -7249,7 +6993,6 @@ struct RuntimeOwner::Data final : CommandSource {
     InputBitmap input;
     ui::SettingsMenuValues menu;
     PreambleState state_{};
-    DamageRulesCache damage_rules;
     AcquisitionStorage acquisition_{};
     std::int32_t shot_index_ = 0;
     esp::HitboxHighlightState highlight_{};
@@ -7389,7 +7132,6 @@ struct RuntimeOwner::Data::Frame {
     TargetPreparationBindings target_preparation;
     RecordCandidateBindings candidates;
     std::array<RageSpreadSample, 32> samples;
-    ExperimentalDamageContext damage_context;
     ScanContext scanner;
     BodyAimProbeContext body_probe;
     TargetPredictionBindings prediction;
@@ -7503,9 +7245,7 @@ RuntimeOwner::Data::Frame::Frame(Data& d, client::CommandFrame& frame, void* pla
                              d.history.entity_runtime().set_absolute_angles,
                              d.storage.data().native_cell<void*>(0x43467204u)},
       extrapolation{d.history.players().cache(), preparation, attachments, d.animation.bones(),
-                    movement_extrapolation, std::nullopt,
-                    d.configuration.rage_settings().global.experimental(ExperimentalRageOption::records),
-                    d.configuration.rage_settings().global.experimental(ExperimentalRageOption::extrapolated_pose)},
+                    movement_extrapolation,      std::nullopt},
       alternative{d.history.entity_runtime().offsets,
                   {std::uint32_t(storage_field(d.storage, 0x36375C23u)),
                    std::uint32_t(storage_field(d.storage, 0x4E66BB34u)),
@@ -7546,11 +7286,7 @@ RuntimeOwner::Data::Frame::Frame(Data& d, client::CommandFrame& frame, void* pla
               inputs.history_interpolation,
               pointed<float>(d.storage, 0x43467EB8u),
               selection_globals.interpolation,
-              d.menu.maximum_unlag,
-              {&d.configuration.rage_settings().global.jitter_fix.value,
-               &d.configuration.rage_settings().global.experimental_rage.value},
-              d.configuration.rage_settings().global.experimental(ExperimentalRageOption::animation),
-              d.configuration.rage_settings().global.experimental(ExperimentalRageOption::resolver)},
+              d.menu.maximum_unlag},
       preamble{
           d.configuration.rage_settings().global,
           d.configuration.rage_settings().aimbot,
@@ -7597,17 +7333,8 @@ RuntimeOwner::Data::Frame::Frame(Data& d, client::CommandFrame& frame, void* pla
                  selection_globals.interpolation,
                  d.menu.maximum_unlag,
                  std::nullopt,
-                 &d.capture_owner.budget(),
-                 extrapolation.validate_record,
-                 extrapolation.rebuild_pose},
+                 &d.capture_owner.budget()},
       samples(hitchance_spread_samples(d.state_.spread)),
-      damage_context(d.damage_rules.capture(
-          bool(preamble.settings.experimental(ExperimentalRageOption::damage)),
-          d.storage.data().native_cell<void*>(0x4346A87Cu),
-          reinterpret_cast<const void*>(std::uintptr_t(frame.weapon_data_address)),
-          storage_field(d.storage, 0xEAA57C2Cu),
-          preamble.settings.experimental(ExperimentalRageOption::damage)
-              ? convar_integer(d.history.game_type()) : 0)),
       scanner{d.scene.queries().ballistics(),
               targeting,
               BallisticEntity(reinterpret_cast<std::uintptr_t>(player)),
@@ -7635,7 +7362,7 @@ RuntimeOwner::Data::Frame::Frame(Data& d, client::CommandFrame& frame, void* pla
               {d.engine.variables.at(0x43467C3Cu), d.engine.variables.at(0x43467084u),
                d.engine.variables.at(0x43468C90u), d.history.teammates_are_enemies()},
               d.storage.data().native_cell<void**>(0x43475B90u),
-              trace_entities, &damage_context},
+              trace_entities},
       body_probe{d.scene.queries().movement(),
                  scanner.ballistics,
                  scanner.source,
@@ -7684,7 +7411,7 @@ RuntimeOwner::Data::Frame::Frame(Data& d, client::CommandFrame& frame, void* pla
                pointed<std::int32_t>(d.storage, 0x43469300u),
                d.jobs},
       final_target{scanner, d.storage.data().native_cell<std::uint32_t*>(0x43469060u), d.menu,
-                   &d.jobs, &history, &preamble},
+                   &d.jobs},
       readiness{
           d.history.players().cache(),
           d.storage.data().native_cell<void*>(0x4346A514u),
@@ -7771,10 +7498,7 @@ RuntimeOwner::Data::Frame::Frame(Data& d, client::CommandFrame& frame, void* pla
               d.storage.data().native_cell<float*>(0x43467EB8u),
               d.storage.data().native_cell<float*>(0x4346A338u),
               &preamble.scheduler_flags,
-              attempts,
-              nullptr,
-              {&d.configuration.rage_settings().global.jitter_fix.value,
-               &d.configuration.rage_settings().global.experimental_rage.value}},
+              attempts},
       shot_models{d.configuration.colored_model_settings(),
                   targeting.entity_list,
                   d.storage.data().native_cell<void*>(0x4346A614u),
@@ -8054,17 +7778,10 @@ bool build_optional_scan_hypotheses(const ScanHypothesisContext& context, void* 
 } // namespace skeet::rage
 
 // ============================================================================
-namespace skeet::rage::scan_detail {
-inline bool precise_damage(const ScanContext& context) {
-    return context.damage_context && context.damage_context->enabled;
-}
-}
-
 // Subcomponent: scanning.cpp
 // ============================================================================
 
 namespace skeet::rage {
-using scan_detail::precise_damage;
 namespace {
 std::vector<RageAimPoint> descriptors(const ScanContext& context, const ScanPolicy& policy,
                                       const lagcomp::LagRecord& record,
@@ -8149,31 +7866,6 @@ float safe_multiplier(const ScanContext& context, const ScanPolicy& policy, std:
 }
 }
 namespace scan_detail {
-DamageRayResult damage_ray(const ScanContext& context, BallisticEntity target,
-                            const Geometry& geometry, const RageVector& direction,
-                            const BallisticQuery& bullet, bool safe) {
-    const auto model = capture_damage_model(context.ballistics, target, *context.damage_context, bullet);
-    anti_aim::TargetTraceFilter native_filter(context.trace_filter_vtable, context.trace_entities,
-                                              0x600400bU, 0x600400bU, 1.0f);
-    const auto filter = native_filter.binding();
-    auto result = trace_damage_ray(context.ballistics, context.source, context.origin, direction,
-                                   geometry.primary, context.box_clipper, filter, bullet, model);
-    if (safe && result.health_damage > 0) {
-        for (const auto& pose : geometry.alternatives) {
-            const auto trial = trace_damage_ray(context.ballistics, context.source, context.origin,
-                                                 direction, pose, context.box_clipper, filter,
-                                                 bullet, model);
-            result.health_damage = std::min(result.health_damage, trial.health_damage);
-            if (result.health_damage <= 0)
-                break;
-        }
-    }
-    // Proposal bound only: the final stage traces each pellet separately.
-    // Do not let a one-pellet scan eliminate an otherwise viable shotgun shot.
-    if (bullet.reserved > 1 && bullet.reserved <= 16)
-        result.health_damage *= float(bullet.reserved);
-    return result;
-}
 RageSpreadBasis spread_basis(const RageVector& axis) noexcept {
     const auto basis = rage_point_detail::basis_from_axis(axis);
     return {axis, basis.side, basis.upper};
@@ -8193,15 +7885,6 @@ ProjectedPoint project(const ScanContext& context, const Geometry& geometry,
     const auto delta = rage_point_detail::subtract(point, context.origin);
     result.direction = rage_point_detail::normalize(
         delta, std::sqrt((delta[0] * delta[0] + delta[1] * delta[1]) + delta[2] * delta[2]));
-    if (precise_damage(context)) {
-        const auto hit = intersect_damage_ray(context.origin, result.direction, range,
-                                              geometry.primary, context.box_clipper);
-        result.position = hit.position;
-        result.hitbox = hit.hitbox;
-        result.hitgroup = hit.hitgroup;
-        result.found = hit.found;
-        return result;
-    }
     const auto scale = range / (rage_point_detail::length(result.direction) + 0x1p-23f);
     const RageVector extended{result.direction[0] * scale, result.direction[1] * scale,
                               result.direction[2] * scale};
@@ -8275,7 +7958,7 @@ void scan_candidate(ScanContext& context, ScanRequest& request) {
         const auto flags = descriptor.flags | request.descriptor_flags;
         if (projected.found && projected.hitgroup == descriptor.hitgroup) {
             bool safe = true;
-            if ((flags & 1U) && !scan_detail::precise_damage(context)) {
+            if (flags & 1U) {
                 const auto minimum =
                     safe_multiplier(context, policy, candidate.health, target, bullet, projected);
                 RageVector direction;
@@ -8290,24 +7973,12 @@ void scan_candidate(ScanContext& context, ScanRequest& request) {
                     float(policy.minimum_damage) /
                         rage_detail::hitgroup_multipliers[std::uint32_t(projected.hitgroup) & 15U]);
                 const auto filter = native_filter.binding();
-                DamageRayResult exact;
-                if (scan_detail::precise_damage(context)) {
-                    exact = scan_detail::damage_ray(context, target, geometry, projected.direction,
-                                                     bullet, (flags & 1U) != 0);
-                    bullet.damage = exact.health_damage;
-                    bullet.flags = exact.flags;
-                } else {
-                    trace_ballistic_bullet(context.ballistics, context.source, context.origin,
-                                           projected.position, filter, bullet);
-                }
-                if (scan_detail::precise_damage(context)
-                        ? std::isfinite(bullet.damage) && bullet.damage > 0
-                        : _mm_cvttss_si32(_mm_set_ss(bullet.damage)) > 0) {
+                trace_ballistic_bullet(context.ballistics, context.source, context.origin,
+                                       projected.position, filter, bullet);
+                if (_mm_cvttss_si32(_mm_set_ss(bullet.damage)) > 0) {
                     const auto info = context.ballistics.entity_info(target);
                     point.position = descriptor.position;
-                    point.damage = scan_detail::precise_damage(context)
-                                       ? damage_lower_bound(bullet.damage)
-                                       : final_bullet_damage(bullet.damage, bullet.armor_ratio,
+                    point.damage = final_bullet_damage(bullet.damage, bullet.armor_ratio,
                                                        std::bit_cast<std::int32_t>(bullet.reserved),
                                                        bullet.weapon_id, projected.hitgroup,
                                                        info.armor, info.helmet);
@@ -8579,37 +8250,6 @@ void refine(const ScanContext& context, const ScanPolicy& policy, std::int32_t h
     const auto reference = point.reference_position;
     const auto damage = point.damage;
     const auto shots = rage_detail::shots_to_kill(health, damage);
-    if (precise_damage(context)) {
-        const auto bullet = prepare_target_bullet(context.weapon, context.weapon_item_offset,
-                                                   context.allow_penetration);
-        // Damage is discontinuous at cover and hitgroup boundaries. Evaluate
-        // bounded candidates instead of interpolating damage or assuming monotonicity.
-        for (unsigned step = 0; step < 8; ++step) {
-            const float fraction = float(step) / 8.0f;
-            RageVector trial;
-            for (unsigned axis = 0; axis < 3; ++axis)
-                trial[axis] = reference[axis] + (original[axis] - reference[axis]) * fraction;
-            const auto projection = project(context, geometry, trial, bullet.range);
-            if (!projection.found || projection.hitgroup != point.hitgroup)
-                continue;
-            const auto evaluated = damage_ray(context, target, geometry, projection.direction,
-                                               bullet, (point.flags & 1U) != 0);
-            const auto trial_damage = damage_lower_bound(evaluated.health_damage);
-            if (trial_damage <= 0 || trial_damage < policy.minimum_damage ||
-                rage_detail::shots_to_kill(health, trial_damage) > shots)
-                continue;
-            point.position = trial;
-            point.damage = trial_damage;
-            point.hitbox = evaluated.hit.hitbox;
-            point.hitgroup = evaluated.hit.hitgroup;
-            point.descriptor_weight *= fraction;
-            break;
-        }
-        // The final stage counts the complete seed domain with actual damage.
-        // A 32-ray geometric estimate must not veto that damage-aware decision.
-        point.chance = 1.0f;
-        return;
-    }
     float fraction = 0.5f;
     auto reference_damage = point.reference_damage;
     bool interpolate = rage_detail::shots_to_kill(health, reference_damage) == shots;
@@ -8717,11 +8357,6 @@ void initialize_global_settings(ConfigRegistries& r, GlobalSettings& c) noexcept
     initialize_boolean_config(d, c.reduce_aim_step, 0x4034958C);
     initialize_integer_config(d, c.aim_step_limit, 0x20E889DE, 15);
     initialize_boolean_config(d, c.pattern_recoil_correction, 0xA434F7C7);
-    initialize_boolean_config(d, c.experimental_rage, experimental_rage_hash);
-    for (const auto option : active_experimental_rage_options) {
-        const auto i = std::size_t(option);
-        initialize_boolean_config(d, c.experimental_options[i], experimental_rage_option_hashes[i]);
-    }
 }
 void initialize_aimbot_settings(ConfigRegistries& r, AimbotSettings& c) noexcept {
     auto& d = r.descriptors;
@@ -9443,16 +9078,14 @@ TargetShotChoice select_acquired_target_for_shot(TargetBatch& batch, Acquisition
     auto& context_flags = state.flags;
     if (!batch.count)
         return {};
-    const bool experimental = bindings.validates_records() || bindings.precise_damage() ||
-                              bindings.full_seed_hitchance();
-    if (!experimental && (context_flags & 0x10U) && frame.weapon_id_d8 == 64 && (frame.flags & 0x40U)) {
+    if ((context_flags & 0x10U) && frame.weapon_id_d8 == 64 && (frame.flags & 0x40U)) {
         batch.candidates[0]->primary.chance = 1.0f;
         return {batch.candidates[0], 0};
     }
     for (std::size_t ordinal = 0; ordinal != batch.count; ++ordinal) {
         auto& candidate = *batch.candidates[ordinal];
         float chance = 1.0f;
-        if (experimental || (context_flags & 0x10U)) {
+        if (context_flags & 0x10U) {
             const auto& evaluation = acquisition_evaluation_for(storage, candidate);
             const auto evaluate = [&] {
                 return evaluate_final_target(frame, state, candidate, evaluation, context_flags,
@@ -9639,107 +9272,13 @@ RageSpreadBasis final_target_spread_basis(const RageVector& point,
     return {center, transverse.side, transverse.upper};
 }
 
-FinalHitchancePlan plan_experimental_hitchance(float minimum_chance) noexcept {
-    if (!std::isfinite(minimum_chance) || minimum_chance < 0 || minimum_chance > 1)
-        return {0, 1, 0};
-    // Count complete seed outcomes, not averaged pose votes. The required count
-    // must round upward; early rejection is valid only when it is unreachable.
-    constexpr unsigned samples = CompleteSpread::seed_count;
-    const auto required = std::max(1, std::int32_t(std::ceil(double(minimum_chance) * samples)));
-    return {samples, 1, std::int32_t(samples) - required + 1};
-}
-
-namespace {
-bool identical_seed_rays(const CompleteSpread* spread) {
-    if (!spread || !spread->valid || !spread->pellets ||
-        spread->pellets > CompleteSpread::maximum_pellets)
-        return false;
-    for (unsigned seed = 1; seed < CompleteSpread::seed_count; ++seed)
-        for (unsigned pellet = 0; pellet < spread->pellets; ++pellet)
-            if (spread->rays[seed][pellet].first != spread->rays[0][pellet].first ||
-                spread->rays[seed][pellet].second != spread->rays[0][pellet].second)
-                return false;
-    return true;
-}
-bool complete_seed_hit(BallisticEngine& engine, const FinalHitchanceSample& input,
-                       const BallisticQuery& base, unsigned seed) {
-    if (!input.complete_spread || !input.complete_spread->valid ||
-        seed >= CompleteSpread::seed_count || (input.damage_model && !input.damage_model->valid))
-        return false;
-    auto damage_for_pose = [&](std::span<const RageScanHitbox> geometry) {
-        float total = 0;
-        for (unsigned pellet = 0; pellet < input.complete_spread->pellets; ++pellet) {
-            const auto& spread = input.complete_spread->rays[seed][pellet];
-            RageVector direction;
-            for (unsigned axis = 0; axis < 3; ++axis)
-                direction[axis] = (spread.first * input.basis.first[axis] + input.basis.center[axis]) +
-                                  spread.second * input.basis.second[axis];
-            const auto magnitude = length(direction);
-            if (!std::isfinite(magnitude) || magnitude <= 0)
-                return 0.0f;
-            for (auto& value : direction)
-                value /= magnitude;
-            const auto hit = intersect_damage_ray(input.origin, direction, base.range,
-                                                   geometry, input.box_clipper);
-            if (!hit.found)
-                continue;
-            auto query = base;
-            if (input.live_bindings) {
-                final_target_detail::trace_projected(*input.live_bindings, engine, input,
-                                                      hit.position, query);
-            } else {
-                auto filter = input.projected_filter;
-                filter.mask = filter.exit_mask = 0x600400bU;
-                filter.minimum_damage = 1;
-                trace_ballistic_bullet(engine, input.source, input.origin, hit.position, filter, query);
-            }
-            // Retaining the starting armor for each pellet is a lower bound if
-            // earlier pellets exhaust it. Never invent damage from an averaged ray.
-            if (input.damage_model) {
-                total += bullet_health_damage(query.damage, hit.hitgroup, *input.damage_model);
-            } else {
-                const auto& target = input.legacy_target;
-                const auto scale = hitgroup_damage_scale(target.armor, target.helmet, hit.hitgroup,
-                                                         base.weapon_id, base.armor_ratio);
-                total += float(damage_lower_bound(query.damage * scale));
-            }
-        }
-        return total;
-    };
-    const auto qualifies = [&](std::span<const RageScanHitbox> geometry) {
-        const auto damage = damage_lower_bound(damage_for_pose(geometry));
-        return damage > 0 && damage >= input.minimum_damage;
-    };
-    if (!qualifies(input.primary))
-        return false;
-    if (input.safe)
-        for (const auto& hypothesis : input.hypotheses)
-            if (!qualifies(hypothesis))
-                return false;
-    return true;
-}
-unsigned seed_for_sample(const FinalHitchancePlan& plan, unsigned ordinal) {
-    return plan.samples == CompleteSpread::seed_count
-               ? ordinal : cached_spread_seed(ordinal * plan.sample_stride);
-}
-}
 void evaluate_final_hitchance_sample(BallisticEngine& engine, const FinalHitchanceSample& input,
                                      RageSpreadSample sample, std::int32_t failure_budget,
-                                     FinalHitchanceVotes& votes, unsigned seed_ordinal) {
+                                     FinalHitchanceVotes& votes) {
     if (votes.stopped.load(std::memory_order_relaxed))
         return;
-    auto query = input.captured_bullet ? *input.captured_bullet
-                                      : prepare_target_bullet(input.weapon, input.weapon_item_offset,
-                                                              input.allow_penetration);
-    if (input.complete_spread) {
-        const auto hit = complete_seed_hit(engine, input, query, seed_ordinal);
-        const auto packed = votes.packed.fetch_add((1u << 16) | unsigned(hit),
-                                                   std::memory_order_relaxed) + (1u << 16) + unsigned(hit);
-        const auto failures = (packed >> 16) - (packed & 0xffffU);
-        if (failures >= unsigned(failure_budget))
-            votes.stopped.store(1, std::memory_order_relaxed);
-        return;
-    }
+    auto query =
+        prepare_target_bullet(input.weapon, input.weapon_item_offset, input.allow_penetration);
     RageVector direction;
     for (std::size_t i = 0; i != 3; ++i)
         direction[i] = (sample.first * input.basis.first[i] + input.basis.center[i]) +
@@ -9814,13 +9353,7 @@ void evaluate_final_hitchance_sample(BallisticEngine& engine, const FinalHitchan
                 }
                 if (hit)
                     ++successes;
-                else if (input.robust_safe) {
-                    successes = 0;
-                    break;
-                }
             }
-            if (input.robust_safe)
-                successes = successes == 3 ? 1u : 0u;
             if (successes) {
                 auto filter = input.projected_filter;
                 filter.mask = filter.exit_mask = 0x600400bU;
@@ -9840,7 +9373,7 @@ void evaluate_final_hitchance_sample(BallisticEngine& engine, const FinalHitchan
             }
         }
     }
-    const auto increment = successes | ((input.safe && !input.robust_safe ? 3U : 1U) << 16);
+    const auto increment = successes | ((input.safe ? 3U : 1U) << 16);
     const auto packed = votes.packed.fetch_add(increment, std::memory_order_relaxed) + increment;
     const auto failures = std::bit_cast<std::int32_t>(packed) >> 16;
     if (failures - std::int32_t(packed & 0xffffU) > failure_budget)
@@ -9865,22 +9398,9 @@ RageHitchance evaluate_final_hitchance_inline(BallisticEngine& engine,
                                               std::span<const RageSpreadSample, 128> samples,
                                               const FinalHitchancePlan& plan) {
     FinalHitchanceVotes votes;
-    if (plan.samples != CompleteSpread::seed_count && plan.samples * plan.sample_stride > samples.size())
-        return {};
-    if (!input.complete_spread && plan.samples == CompleteSpread::seed_count)
-        return {};
-    if (plan.samples == CompleteSpread::seed_count && identical_seed_rays(input.complete_spread)) {
-        // Exact reduction for identical outcomes (including no-spread servers).
-        // It preserves the full probability without repeating identical traces.
-        evaluate_final_hitchance_sample(engine, input, {}, plan.failure_budget, votes, 0);
-        const bool hit = (votes.packed.load(std::memory_order_relaxed) & 0xffffU) != 0;
-        return {hit ? CompleteSpread::seed_count : 0u, hit ? 1.0f : 0.0f};
-    }
     for (std::size_t i = 0; i != plan.samples; ++i)
-        evaluate_final_hitchance_sample(engine, input,
-                                        input.complete_spread ? RageSpreadSample{} : samples[i * plan.sample_stride],
-                                        plan.failure_budget, votes,
-                                        input.complete_spread ? seed_for_sample(plan, unsigned(i)) : 0);
+        evaluate_final_hitchance_sample(engine, input, samples[i * plan.sample_stride],
+                                        plan.failure_budget, votes);
     return final_hitchance_fraction(votes, plan.failure_budget);
 }
 
@@ -9891,7 +9411,6 @@ struct FinalWork {
     RageSpreadSample sample;
     std::int32_t budget;
     FinalHitchanceVotes* votes;
-    unsigned ordinal;
 };
 struct FinalJobItem {
     FinalWork* work;
@@ -9907,7 +9426,7 @@ void final_sample_job(void* raw) {
 #endif
     const auto& work = *static_cast<FinalJobItem*>(raw)->work;
     evaluate_final_hitchance_sample(*work.engine, *work.input, work.sample, work.budget,
-                                    *work.votes, work.ordinal);
+                                    *work.votes);
 }
 }
 
@@ -9916,19 +9435,11 @@ RageHitchance evaluate_final_hitchance_parallel(BallisticEngine& engine,
                                                 std::span<const RageSpreadSample, 128> samples,
                                                 const FinalHitchancePlan& plan,
                                                 engine::JobDispatcher& jobs) {
-    if (identical_seed_rays(input.complete_spread))
-        return evaluate_final_hitchance_inline(engine, input, samples, plan);
     FinalHitchanceVotes votes;
-    if ((plan.samples != CompleteSpread::seed_count && plan.samples * plan.sample_stride > samples.size()) ||
-        (plan.samples == CompleteSpread::seed_count && !input.complete_spread))
-        return {};
-    std::array<FinalWork, CompleteSpread::seed_count> work;
-    std::array<FinalJobItem, CompleteSpread::seed_count> items;
+    std::array<FinalWork, 64> work;
+    std::array<FinalJobItem, 64> items;
     for (std::size_t i = 0; i != plan.samples; ++i) {
-        work[i] = {&engine, &input,
-                   input.complete_spread ? RageSpreadSample{} : samples[i * plan.sample_stride],
-                   plan.failure_budget, &votes,
-                   input.complete_spread ? seed_for_sample(plan, unsigned(i)) : 0};
+        work[i] = {&engine, &input, samples[i * plan.sample_stride], plan.failure_budget, &votes};
         items[i].work = &work[i];
     }
     auto task = jobs.create_eight(final_sample_job);
@@ -9986,14 +9497,7 @@ bool evaluate_target_hitchance_impl(FinalHitchanceContext& context,
                                     const lagcomp::LagRecord& record, std::int32_t minimum_damage,
                                     float minimum_chance, float& chance,
                                     final_target_detail::Producer* producer) {
-    const bool precise_damage = context.damage_context && context.damage_context->enabled;
-    const bool precise_samples = precise_damage || context.full_seed_hitchance;
-    if (precise_samples &&
-        (!std::isfinite(minimum_chance) || minimum_chance < 0 || minimum_chance > 1)) {
-        chance = 0;
-        return false;
-    }
-    if ((context.weapon_flags & 0x4000U) && !precise_samples) {
+    if (context.weapon_flags & 0x4000U) {
         chance = 1.0f;
         return true;
     }
@@ -10001,20 +9505,6 @@ bool evaluate_target_hitchance_impl(FinalHitchanceContext& context,
         return false;
     auto bullet = prepare_target_bullet(context.weapon, context.weapon_item_offset,
                                         context.allow_penetration);
-    BulletDamageModel model;
-    BallisticEntityInfo legacy_target{};
-    if (precise_samples && (!context.complete_spread || !context.complete_spread->valid)) {
-        chance = 0;
-        return false;
-    }
-    if (precise_damage) {
-        model = capture_damage_model(context.ballistics, context.target, *context.damage_context, bullet);
-        if (!model.valid) {
-            chance = 0;
-            return false;
-        }
-    } else if (precise_samples)
-        legacy_target = context.ballistics.entity_info(context.target);
     const auto delta = subtract(candidate.primary.position, context.origin);
     const auto basis = final_target_spread_basis(candidate.primary.position, context.origin);
     if (producer)
@@ -10057,25 +9547,14 @@ bool evaluate_target_hitchance_impl(FinalHitchanceContext& context,
         producer ? final_target_detail::select_studio_hitbox(context, *producer, candidate, record)
                  : (candidate.primary.flags & 1U) && (record.header.flags & 0x80U) &&
                        context.local_hitboxes[std::size_t(candidate.primary.hitbox)].radius > 0.0f;
-    if (producer && !producer->selected_descriptor) {
-        chance = 0;
-        return false;
-    }
-    const auto plan = context.full_seed_hitchance
-                          ? plan_experimental_hitchance(minimum_chance)
-                          : plan_final_hitchance(
-                                safe && !precise_samples, minimum_chance, context.context_flags, candidate.entity_index,
-                                producer ? producer->state.previous_targets : context.previous_targets);
+    const auto plan = plan_final_hitchance(
+        safe, minimum_chance, context.context_flags, candidate.entity_index,
+        producer ? producer->state.previous_targets : context.previous_targets);
     std::array<std::vector<RageScanHitbox>, 3> geometry;
-    std::vector<RageScanHitbox> primary_geometry;
     RageResolverHitboxes hypotheses;
     float minimum_multiplier = 0, base_damage = 0;
     lagcomp::EntityRecordScope scope(context.entity_runtime, context.target_player,
                                      context.saved_bones);
-    if (precise_samples)
-        primary_geometry = producer ? final_target_detail::hitbox_geometry(context, *producer, record.matrices)
-                                    : prepare_rage_scan_hitboxes(context.local_hitboxes, record.matrices,
-                                                                 context.trigonometry);
     if (safe) {
         if ((producer ? producer->frame.weapon_id_d8 : std::int32_t(bullet.weapon_id)) == 31)
             base_damage = 1;
@@ -10099,10 +9578,10 @@ bool evaluate_target_hitchance_impl(FinalHitchanceContext& context,
         }
         // The native consumer prepares the primary set before the three
         // resolver sets, retaining its engine descriptor and matrix ordering.
-        if (!precise_samples)
-            primary_geometry = producer ? final_target_detail::hitbox_geometry(context, *producer, record.matrices)
-                                        : prepare_rage_scan_hitboxes(context.local_hitboxes, record.matrices,
-                                                                     context.trigonometry);
+        const auto primary =
+            producer ? final_target_detail::hitbox_geometry(context, *producer, record.matrices)
+                     : prepare_rage_scan_hitboxes(context.local_hitboxes, record.matrices,
+                                                  context.trigonometry);
         for (std::size_t i = 0; i != 3; ++i) {
             geometry[i] = producer ? final_target_detail::hitbox_geometry(
                                          context, *producer, record.alternatives[i].matrices)
@@ -10140,18 +9619,14 @@ bool evaluate_target_hitchance_impl(FinalHitchanceContext& context,
                                context.box_clipper,
                                context.direction_filter,
                                context.projected_filter,
-                               producer ? &producer->bindings : nullptr,
-                               precise_samples && safe,
-                               precise_damage ? &model : nullptr, primary_geometry,
-                               precise_samples ? context.complete_spread : nullptr,
-                               precise_samples ? &bullet : nullptr, legacy_target};
+                               producer ? &producer->bindings : nullptr};
     const auto result =
         context.settings_menu.multithreading
             ? evaluate_final_hitchance_parallel(context.ballistics, input, context.samples, plan,
                                                 *context.jobs)
             : evaluate_final_hitchance_inline(context.ballistics, input, context.samples, plan);
     chance = result.fraction;
-    const bool accepted = !(minimum_chance > chance) && (!precise_samples || result.hits > 0);
+    const bool accepted = !(minimum_chance > chance);
     if (!accepted) {
         FinalHitchanceFailure failure{context.context_flags, context.weapon_flags,
                                       context.weapon,        candidate.primary.hitgroup,
@@ -10189,17 +9664,14 @@ TargetShotChoice select_target_for_shot(TargetBatch& batch,
                                         float point_penalty) {
     if (!batch.count)
         return {};
-    const auto* context = evaluations.empty() ? nullptr : evaluations.front().context;
-    const bool experimental = context && (context->full_seed_hitchance ||
-        (context->damage_context && context->damage_context->enabled));
-    if (!experimental && (context_flags & 0x10U) && weapon_id == 64 && (weapon_flags & 0x40U)) {
+    if ((context_flags & 0x10U) && weapon_id == 64 && (weapon_flags & 0x40U)) {
         batch.candidates[0]->primary.chance = 1.0f;
         return {batch.candidates[0], 0};
     }
     for (std::size_t i = 0; i != batch.count; ++i) {
         auto& candidate = *batch.candidates[i];
         float chance = 1.0f;
-        if (experimental || (context_flags & 0x10U)) {
+        if (context_flags & 0x10U) {
             const auto& evaluation = evaluations[i];
             const auto evaluate = [&] {
                 return evaluate_target_hitchance(*evaluation.context, candidate, *evaluation.record,

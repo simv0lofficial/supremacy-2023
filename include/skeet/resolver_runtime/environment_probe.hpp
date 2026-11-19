@@ -1,6 +1,5 @@
 #pragma once
 #include "skeet/rage/ballistics.hpp"
-#include "skeet/rage/experimental_switch.hpp"
 #include "skeet/rage_hitboxes.hpp"
 
 namespace skeet::resolver_runtime {
@@ -26,9 +25,9 @@ struct EnvironmentEngine {
     BallisticEngine& penetration;
     RageTrigonometry trigonometry;
     std::uint8_t* suppression_flag = nullptr; // native global434683D0 pointed byte
-    rage::ExperimentalSwitch rework{};
+    const std::uint8_t* rework = nullptr;
     bool reworked() const noexcept {
-        return bool(rework);
+        return rework && *rework;
     }
 };
 struct EnvironmentProbe {

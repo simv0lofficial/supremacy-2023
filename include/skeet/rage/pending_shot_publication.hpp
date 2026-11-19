@@ -24,8 +24,7 @@ struct PendingShotPublicationBindings {
     const float* interval; // *4346A338
     const std::uint32_t* scheduler_flags; //434759C0
     resolver_runtime::AttemptEngineBinding attempts;
-    ExperimentalSwitch resolver_rework{};
-    ExperimentalSwitch jitter_fix{};
+    const std::uint8_t* resolver_rework = nullptr;
 };
 
 // Complete433CCA5C. The original null-system path copies4346F1B8; otherwise

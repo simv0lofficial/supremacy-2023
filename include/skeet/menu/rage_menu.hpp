@@ -81,6 +81,5 @@ private:
     Tab& tab_;
     Category category_;
     std::unique_ptr<QuickPeekMenu> quick_peek_;
-    std::array<VisibilityLink, 2> experimental_links_{};
 };
 } // namespace skeet::ui

@@ -1,21 +1,9 @@
 #pragma once
 #include "skeet/lagcomp/history.hpp"
-#include "skeet/resolver_runtime/build_validation.hpp"
 #include <algorithm>
 #include <cmath>
 
 namespace skeet::lagcomp {
-inline bool record_geometry_valid(const LagRecord& record) noexcept {
-    if (!(record.header.flags & 4u) || !std::isfinite(record.header.animation_yaw) ||
-        !std::isfinite(record.header.duck_amount) ||
-        !resolver_runtime::complete_hitbox_matrices(19, record.matrices))
-        return false;
-    if (record.header.flags & 0x80u)
-        for (const auto& alternative : record.alternatives)
-            if (!resolver_runtime::complete_hitbox_matrices(19, alternative.matrices))
-                return false;
-    return true;
-}
 inline bool record_time_valid(const LagRecord& record, const HistoryTickTiming& input) noexcept {
     const auto timing = resolve_history_tick_timing(input);
     if (!(record.header.flags & 4u) || !(timing.interval > 0.0f) ||
@@ -42,23 +30,18 @@ inline bool record_time_valid(const LagRecord& record, const HistoryTickTiming& 
     return sample >= clock - maximum && sample <= clock + timing.interval;
 }
 inline bool record_precedes_discontinuity(const RecordRing& history, std::int32_t tick) noexcept {
-    if (history.count > history.records.size())
-        return true;
     for (std::uint32_t age = 1; age < history.count; ++age) {
         const auto& newer = history.at(age - 1).header;
         const auto& older = history.at(age).header;
-        if (newer.simulation_tick <= older.simulation_tick)
-            return true;
         if (tick >= newer.simulation_tick)
             break;
-        if (newer.flags & 0x200u)
-            return true;
         float squared = 0.0f;
         for (unsigned axis = 0; axis < 3; ++axis) {
             const auto delta = newer.origin[axis] - older.origin[axis];
             squared += delta * delta;
         }
-        if (!std::isfinite(squared) || squared > 4096.0f)
+        if (!std::isfinite(squared) || squared > 4096.0f ||
+            newer.simulation_tick <= older.simulation_tick)
             return true;
     }
     return false;

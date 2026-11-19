@@ -1,5 +1,4 @@
 #pragma once
-#include "experimental_switch.hpp"
 #include "skeet/rage/ballistics.hpp"
 #include "skeet/events/game_events.hpp"
 #include "skeet/lagcomp/timeline.hpp"
@@ -159,7 +158,7 @@ struct ShotFeedbackRuntime {
     std::int32_t maximum_unlag_milliseconds = 0;
     // Native convar read at 43468EA4; a nonzero value suppresses ray tests.
     bool ray_tests_disabled = false;
-    rage::ExperimentalSwitch resolver_rework{};
+    const std::uint8_t* resolver_rework = nullptr;
 };
 
 float quantize_shot_coordinate(float) noexcept; // complete 433E104F

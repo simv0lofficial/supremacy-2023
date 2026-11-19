@@ -18,6 +18,5 @@ HistoryAnimationSeed prepare_history_animation(client::PlayerState&, void* playe
                                                void* animation_state, std::int32_t simulation_ticks,
                                                std::uint32_t update_flags,
                                                const EntityStateRuntime&,
-                                               std::uint32_t player_flags_e2fbe695,
-                                               bool strict_bounds = false);
+                                               std::uint32_t player_flags_e2fbe695);
 } // namespace skeet::lagcomp

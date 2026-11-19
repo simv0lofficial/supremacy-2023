@@ -1,6 +1,5 @@
 #pragma once
 #include <cstdint>
-#include "skeet/rage/experimental_switch.hpp"
 
 namespace skeet::lagcomp {
 // One source-owned configuration for the complete4347E5DE owner. Offsets
@@ -12,17 +11,9 @@ struct HistoryRecordingConfiguration {
     const std::uint8_t* resolver_enabled; // receiver+30, global4346754C
     std::uint8_t prediction_available; // receiver+34, full owner+3C
     void* engine; // receiver+38, full owner+40
-    rage::ExperimentalSwitch rework{};
-    rage::ExperimentalSwitch jitter_fix{};
-    rage::ExperimentalSwitch resolver_corrections{};
-    bool jitter_enabled() const noexcept {
-        return jitter_fix && resolver_enabled && *resolver_enabled;
-    }
+    const std::uint8_t* rework = nullptr;
     bool reworked() const noexcept {
-        return bool(rework);
-    }
-    bool resolver_reworked() const noexcept {
-        return bool(resolver_corrections);
+        return rework && *rework;
     }
 };
 } //namespace skeet::lagcomp

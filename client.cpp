@@ -4551,9 +4551,6 @@ void feature_indicators(void* context) { //434909F8, descriptor43468B84
 void anti_aim_correction(void* context) { //43490A1A, descriptor4346753C
     auto& source = bindings(context);
     append(source, source.rage.anti_aim_correction);
-    append(source, source.rage.experimental_rage);
-    for (const auto option : rage::active_experimental_rage_options)
-        append(source, source.rage.experimental_options[std::size_t(option)]);
 }
 void visual_recoil(void* context) { //43490A34, descriptor4346744C
     auto& source = bindings(context);
@@ -8732,19 +8729,14 @@ struct HistoryRuntimeOwner::Data {
                         &config.rage_settings().global.enabled.value,
                         &config.rage_settings().global.anti_aim_correction.value,
                         0,
-                        entity.engine,
-                        config.rage_settings().global.experimental(rage::ExperimentalRageOption::animation),
-                        {&config.rage_settings().global.jitter_fix.value,
-                         &config.rage_settings().global.experimental_rage.value},
-                        config.rage_settings().global.experimental(rage::ExperimentalRageOption::resolver)},
+                        entity.engine},
           jobs(imports.thread_pool, storage.memory()), environment{&storage,
                                                                    trace,
                                                                    point_contents,
                                                                    view_angles,
                                                                    scene.queries().ballistics(),
                                                                    bones.trigonometry(),
-                                                                   entity.transform_override,
-                                                                   config.rage_settings().global.experimental(rage::ExperimentalRageOption::resolver)},
+                                                                   entity.transform_override},
           history_environment{environment, entity.offsets.origin, numeric.environment_atan2},
           animation(lagcomp::native_history_animation_engine(
               storage.data().native_cell<void*>(0x434693F0u))),
@@ -8860,7 +8852,7 @@ struct HistoryRuntimeOwner::Data {
     static lagcomp::HistoryResolverFields resolver_fields(const engine::NativeOffsetGlobals& g) {
         return {offset(g, 0x43468354u), offset(g, 0x434670E0u), offset(g, 0x434679CCu),
                 offset(g, 0x43467D78u), offset(g, 0x43467E8Cu), offset(g, 0x43468240u),
-                offset(g, 0x43468D6Cu), offset(g, 0x434670A0u)};
+                offset(g, 0x43468D6Cu)};
     }
     static lagcomp::HistoryAnimationPublishFields
     publication_fields(const engine::NativeOffsetGlobals& g) {

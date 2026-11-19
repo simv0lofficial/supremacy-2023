@@ -16,7 +16,7 @@ struct FeedbackEntityBindings {
     const float& correction_floor; //43469254
     const float& correction_addend; //43476928
     const std::int32_t& maximum_unlag; //43468230, milliseconds
-    ExperimentalSwitch resolver_rework{};
+    const std::uint8_t* resolver_rework = nullptr;
 
     bool enabled(const ShotFeedbackState&) const noexcept;
     float now() const noexcept;
@@ -28,7 +28,7 @@ struct FeedbackEntityBindings {
     std::int32_t maximum_unlag_milliseconds() const noexcept;
     bool ray_tests_disabled() const noexcept;
     bool reworked() const noexcept {
-        return bool(resolver_rework);
+        return resolver_rework && *resolver_rework;
     }
 };
 struct FeedbackEntityOwner {

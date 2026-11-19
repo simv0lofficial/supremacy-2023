@@ -1132,8 +1132,7 @@ struct FeedbackRuntimeOwner::Data {
                s.data().native_cell<std::uint32_t>(0x43468EA4u),
                s.data().native_cell<float>(0x43469254u),
                s.data().native_cell<float>(0x43476928u),
-               c.settings_menu().maximum_unlag,
-               c.rage_settings().global.experimental(ExperimentalRageOption::resolver)},
+               c.settings_menu().maximum_unlag},
           packet{c.rage_settings().global.enabled.value,
                  c.rage_settings().global.anti_aim_correction.value,
                  s.data().native_cell<void*>(0x4346A894u),
@@ -1157,9 +1156,7 @@ struct FeedbackRuntimeOwner::Data {
               s.data().native_cell<float*>(0x4346A338u),
               &s.data().native_cell<std::uint32_t>(0x434759C0u),
               attempts,
-              c.rage_settings().global.experimental(ExperimentalRageOption::resolver),
-              {&c.rage_settings().global.jitter_fix.value,
-               &c.rage_settings().global.experimental_rage.value}},
+              nullptr},
           factory{registry(s, 0x43475B78u),
                   s.command_phases(),
                   s.entity_observers(),
@@ -1176,9 +1173,7 @@ struct FeedbackRuntimeOwner::Data {
                   packet,
                   *s.data().native_cell<std::int32_t*>(0x43475B2Cu),
                   s.data().native_cell<void*>(0x4346A514u),
-                  s.data().native_cell<FeedbackOwner*>(0x43475A7Cu)} {
-        runtime.resolver_rework = c.rage_settings().global.experimental(ExperimentalRageOption::resolver);
-    }
+                  s.data().native_cell<FeedbackOwner*>(0x43475A7Cu)} {}
 };
 FeedbackRuntimeOwner::FeedbackRuntimeOwner(
     ClientRuntimeStorage& s, const client::EngineRuntimeBindings& e,
@@ -1361,13 +1356,8 @@ bool publish_pending_shot(const client::CommandFrame& frame, const lagcomp::Eval
     write_mode_yaw(player.native, source);
     // Publication is not feedback. Wait for the actual shot ray before
     // rejecting a pose; a pending high-chance shot has not missed yet.
-    if (bindings.resolver_rework)
+    if (bindings.resolver_rework && *bindings.resolver_rework)
         return true;
-    if (bindings.jitter_fix) {
-        const auto* evidence = player.jitter.find(source.record.header);
-        if (evidence && evidence->applied_to(source.record.header))
-            return true;
-    }
     if (!(shot.state.words[13] & 4U) || !shot.state.record.header.resolver_index ||
         !(real(shot.state.words[14]) > 0.9f) ||
         integer(shot.state.words[10]) < integer(shot.state.words[2]))
@@ -1743,7 +1733,7 @@ struct SnapshotFeedbackValues {
         return runtime.ray_tests_disabled;
     }
     bool reworked() const noexcept {
-        return bool(runtime.resolver_rework);
+        return runtime.resolver_rework && *runtime.resolver_rework;
     }
 };
 static_assert(offsetof(client::NativePlayerStateLayout, resolver_slots) == 0x10);
