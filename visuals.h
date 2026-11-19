@@ -1259,7 +1259,7 @@ struct GrenadeLaunch {
 };
 // Complete native compensation helper 433E76A9. Non-finite solutions retain
 // the input angles. The coefficients are the native owner's constructor state.
-void compensate_grenade_movement(Vector3 velocity, float speed, Vector3& angles) noexcept;
+GrenadeCompensation compensate_grenade_movement(Vector3 velocity, float speed, Vector3& angles) noexcept;
 // Launch chain 433BAB00..433BB16C: strength/speed clamps, pitch adjustment,
 // optional recoil/movement compensation, 22-unit hull trace, six-unit setback.
 GrenadeLaunch prepare_grenade_throw(const GrenadeThrowInput&, GrenadeTraceProvider);

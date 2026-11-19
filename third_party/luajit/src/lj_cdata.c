@@ -204,6 +204,22 @@ collect_attrib:
 
 /* -- C data getters ------------------------------------------------------ */
 
+/* A direct array or struct owns its payload. A reference or pointer only
+** owns the pointer value, so its pointee still requires a host check.
+*/
+static int cdata_owns_range(CTState *cts, GCcdata *cd, const void *p, CTSize len)
+{
+  uintptr_t offset;
+  CType *ct;
+  CTSize size;
+  if (!cd || !len || len == CTSIZE_INVALID) return 0;
+  offset = (uintptr_t)p - (uintptr_t)cdataptr(cd);
+  ct = ctype_raw(cts, cd->ctypeid);
+  if (!(ctype_isarray(ct->info) || ctype_isstruct(ct->info))) return 0;
+  size = cdataisv(cd) ? cdatavlen(cd) : ct->size;
+  return size != CTSIZE_INVALID && len <= size && offset <= size - len;
+}
+
 /* Get constant value and convert to TValue. */
 static void cdata_getconst(CTState *cts, TValue *o, CType *ct)
 {
@@ -218,7 +234,7 @@ static void cdata_getconst(CTState *cts, TValue *o, CType *ct)
 }
 
 /* Get C data value and convert to TValue. */
-int lj_cdata_get(CTState *cts, CType *s, TValue *o, uint8_t *sp)
+int lj_cdata_get(CTState *cts, GCcdata *cd, CType *s, TValue *o, uint8_t *sp)
 {
   CTypeID sid;
 
@@ -227,7 +243,9 @@ int lj_cdata_get(CTState *cts, CType *s, TValue *o, uint8_t *sp)
     return 0;  /* No GC step needed. */
   } else if (ctype_isbitfield(s->info)) {
     uint32_t zero = 0;
-    if (!cdata_checkptr(cts->L, sp, ctype_bitcsz(s->info), SKEET_FFI_READ))
+    CTSize size = ctype_bitcsz(s->info);
+    if (!cdata_owns_range(cts, cd, sp, size) &&
+        !cdata_checkptr(cts->L, sp, size, SKEET_FFI_READ))
       sp = (uint8_t *)&zero;
     return lj_cconv_tv_bf(cts, s, o, sp);
   }
@@ -242,6 +260,7 @@ int lj_cdata_get(CTState *cts, CType *s, TValue *o, uint8_t *sp)
   if (ctype_isref(s->info)) {
     lj_assertCTS(s->size == CTSIZE_PTR, "ref is not pointer-sized");
     sp = cdata_checkptr(cts->L, sp, CTSIZE_PTR, SKEET_FFI_READ) ? *(uint8_t **)sp : NULL;
+    cd = NULL;
     sid = ctype_cid(s->info);
     s = ctype_get(cts, sid);
   }
@@ -250,19 +269,23 @@ int lj_cdata_get(CTState *cts, CType *s, TValue *o, uint8_t *sp)
   while (ctype_isattrib(s->info))
     s = ctype_child(cts, s);
 
-  return lj_cconv_tv_ct(cts, s, sid, o, sp);
+  return lj_cconv_tv_ct(cts, s, sid, o, sp,
+                        cdata_owns_range(cts, cd, sp, s->size) ? CCF_SAFEREAD : 0);
 }
 
 /* -- C data setters ------------------------------------------------------ */
 
 /* Convert TValue and set C data value. */
-void lj_cdata_set(CTState *cts, CType *d, uint8_t *dp, TValue *o, CTInfo qual)
+void lj_cdata_set(CTState *cts, GCcdata *cd, CType *d, uint8_t *dp, TValue *o,
+                  CTInfo qual)
 {
   if (ctype_isconstval(d->info)) {
     goto err_const;
   } else if (ctype_isbitfield(d->info)) {
+    CTSize size = ctype_bitcsz(d->info);
     if (((d->info|qual) & CTF_CONST)) goto err_const;
-    if (!cdata_checkptr(cts->L, dp, ctype_bitcsz(d->info), SKEET_FFI_WRITE)) return;
+    if (!cdata_owns_range(cts, cd, dp, size) &&
+        !cdata_checkptr(cts->L, dp, size, SKEET_FFI_WRITE)) return;
     lj_cconv_bf_tv(cts, d, dp, o);
     return;
   }
@@ -277,6 +300,7 @@ void lj_cdata_set(CTState *cts, CType *d, uint8_t *dp, TValue *o, CTInfo qual)
     lj_assertCTS(d->size == CTSIZE_PTR, "ref is not pointer-sized");
     if (!cdata_checkptr(cts->L, dp, CTSIZE_PTR, SKEET_FFI_READ)) return;
     dp = *(uint8_t **)dp;
+    cd = NULL;
     d = ctype_child(cts, d);
   }
 
@@ -298,7 +322,8 @@ void lj_cdata_set(CTState *cts, CType *d, uint8_t *dp, TValue *o, CTInfo qual)
     lj_err_caller(cts->L, LJ_ERR_FFI_WRCONST);
   }
 
-  lj_cconv_ct_tv(cts, d, dp, o, 0);
+  lj_cconv_ct_tv(cts, d, dp, o,
+                cdata_owns_range(cts, cd, dp, d->size) ? CCF_SAFEWRITE : 0);
 }
 
 #endif

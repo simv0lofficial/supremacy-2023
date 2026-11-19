@@ -54,9 +54,7 @@ struct SettingsMenuValues {
     std::uint8_t& faster_grenade_toss; // 0x43467560
 };
 
-// 0x4348BA55..0x4348BF4D. The native constructor creates the debug controls
-// and then hides its ten-element vector; configuration loading keeps them
-// hidden because they have no visibility links.
+// 0x4348BA55..0x4348BF4D, with the source client's advanced controls exposed.
 class SettingsMenu final : public BoundMenuControls {
 public:
     SettingsMenu(Tab&, ConfigRegistries&, WidgetIdentities&, SettingsMenuValues,
@@ -75,6 +73,7 @@ public:
 private:
     static void dpi_scale_changed(void*, Widget&);
     static void allow_custom_events_changed(void*, Widget&);
+    static void unlock_hidden_cvars_changed(void*, Widget&);
     static void lock_layout_changed(void*, Widget&);
     static void reset_layout(void*, Widget&);
     static void unload(void*, Widget&);
@@ -84,6 +83,7 @@ private:
     Category category_;
     misc::SettingsRuntime& runtime_;
     Slider* maximum_usercmd_ticks_ = nullptr; // native MISC Tab +0xD8
+    BooleanConfig unlock_hidden_cvars_;
 };
 
 } // namespace skeet::ui

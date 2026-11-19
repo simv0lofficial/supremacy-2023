@@ -9,7 +9,7 @@ struct ConfigName {
     std::u16string_view label;
 };
 // Recovered text/config identities. This does not reconstruct control construction.
-inline constexpr std::array<ConfigName, 183> config_names = {{
+inline constexpr std::array<ConfigName, 184> config_names = {{
     {0x23060EC5u, u"Enabled"},
     {0x65E86322u, u"Target selection"},
     {0x5B900854u, u"Target hitbox"},
@@ -43,6 +43,7 @@ inline constexpr std::array<ConfigName, 183> config_names = {{
     {0xD6D22A5Au, u"Maximum FOV"},
     {0xE82BE8DDu, u"Log misses due to spread"},
     {0x2B385DC7u, u"Low FPS mitigations"},
+    {0x8C2E9D71u, u"Jitter fix"},
     {0x8DFD54BDu, u"Anti-aimbot angles"},
     {0x96C0EF29u, u"Enabled"},
     {0x6D5F1172u, u"Pitch"},

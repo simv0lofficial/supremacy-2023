@@ -248,28 +248,7 @@ extern void __DestructExceptionObject(EXCEPTION_RECORD *rec, int nothrow);
 #define LJ_EXCODE_ERRCODE(cl)	((int)((cl) & 0xff))
 
 #if LJ_TARGET_X86
-/* The client VEH defers native access faults to the VM when its protected
-** frame is between the fault and the client's outer recovery frame. */
-LJ_FUNCA int lj_err_unwind_win(EXCEPTION_RECORD *, void *, CONTEXT *,
-                             UndocumentedDispatcherContext *);
-
-int skeet_lua_has_native_unwinder(const void *limit)
-{
-  typedef struct SkeetSEH {
-    struct SkeetSEH *previous;
-    void *handler;
-  } SkeetSEH;
-  SkeetSEH *frame;
-  __asm__ __volatile__("movl %%fs:0, %0" : "=r"(frame));
-  while ((uintptr_t)frame < (uintptr_t)limit) {
-    if (frame->handler == (void *)lj_err_unwind_win)
-      return 1;
-    if ((uintptr_t)frame->previous <= (uintptr_t)frame)
-      break;
-    frame = frame->previous;
-  }
-  return 0;
-}
+extern int skeet_lua_can_unwind_native_fault(unsigned code, unsigned flags);
 #endif
 
 /* Windows exception handler for interpreter frame. */
@@ -313,17 +292,12 @@ LJ_FUNCA int lj_err_unwind_win(EXCEPTION_RECORD *rec,
 #endif
 	setstrV(L, L->top++, lj_err_str(L, LJ_ERR_ERRCPP));
 #if LJ_TARGET_X86
-      } else if (rec->ExceptionCode == EXCEPTION_ACCESS_VIOLATION ||
-                 rec->ExceptionCode == EXCEPTION_IN_PAGE_ERROR) {
-        /* Use the normal VM landing pad so base, top, cframe and open
-        ** upvalues are unwound before another callback can run. */
-        setmref(G(L)->jit_base, NULL);
-        lj_trace_abort(G(L));
-        lj_strfmt_pushf(L, "Native exception 0x%08x at %p",
-                        (uint32_t)rec->ExceptionCode, rec->ExceptionAddress);
+      } else if (skeet_lua_can_unwind_native_fault(rec->ExceptionCode, rec->ExceptionFlags)) {
+	if (cframe_raw(cf2) != cf) return 1;
+	setstrV(L, L->top++, lj_str_newlit(L, "native access violation in Lua callback"));
 #endif
       } else if (!LJ_EXCODE_CHECK(rec->ExceptionCode)) {
-	/* Don't catch unrelated native exceptions. */
+	/* Don't catch access violations etc. */
 	return 1;  /* ExceptionContinueSearch */
       }
 #if LJ_TARGET_X86
@@ -367,6 +341,19 @@ LJ_FUNCA int lj_err_unwind_win(EXCEPTION_RECORD *rec,
   }
   return 1;  /* ExceptionContinueSearch */
 }
+
+#if LJ_TARGET_X86
+uintptr_t skeet_lua_seh_handler_address(void)
+{
+  return (uintptr_t)lj_err_unwind_win;
+}
+
+int skeet_lua_can_unwind_seh_frame(const void *registration)
+{
+  void *cf = (char *)registration - CFRAME_OFS_SEH;
+  return cframe_raw(err_unwind(cframe_L(cf), cf, 0)) == cf;
+}
+#endif
 
 #if LJ_UNWIND_JIT
 

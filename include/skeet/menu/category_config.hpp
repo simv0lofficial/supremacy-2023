@@ -9,6 +9,7 @@ std::uint32_t category_name_hash(std::u16string_view name) noexcept;
 Tab* find_config_tab(MenuWindow& window, std::uint32_t hash);
 Category* find_config_category(Tab& tab, std::uint32_t hash);
 std::vector<ConfigDescriptor*> collect_category_config(Category& category, ConfigLink& registry);
+std::vector<ConfigDescriptor*> collect_tab_config(const Tab& tab, ConfigLink& registry);
 bool category_config_loading() noexcept;
 // The native loading byte is one during all three passes. Hotkeys preserve
 // their current toggle bit while the baseline and selected values are copied.

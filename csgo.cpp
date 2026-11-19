@@ -5598,7 +5598,7 @@ BuildSkinBindings initialize_build_skin_bindings(NativeDataImage& data,
     auto* base_client = data.native_cell<void*>(0x434683E0u);
     require(base_client != nullptr, "Skin classes require the canonical VClient018 interface");
     auto* glove = klass(base_client, image, "CEconWearable");
-    auto* viewmodel = klass(base_client, image, "CPredictedViewModel");
+    auto* weapon_world_model = klass(base_client, image, "CBaseWeaponWorldModel");
     auto* knife = klass(base_client, image, "CKnife");
     auto* vstdlib = data.native_cell<std::byte*>(0x43468A7Cu);
     const auto seed = reinterpret_cast<BuildSkinBindings::RandomSeed>(
@@ -5628,7 +5628,7 @@ BuildSkinBindings initialize_build_skin_bindings(NativeDataImage& data,
     data.native_cell<const std::byte*>(0x43467EF4u) = rows;
     data.native_cell<const std::int32_t*>(0x434670C4u) = counters;
     data.native_cell<ClientClass*>(0x4346841Cu) = glove;
-    return {data, seed, random, viewmodel, knife};
+    return {data, seed, random, weapon_world_model, knife};
 }
 BuildSkinBindings initialize_build_skin_bindings(NativeDataImage& data) {
     return initialize_build_skin_bindings(data, native_image_environment());

@@ -35,6 +35,7 @@ using skeet::subtract;
 #include <emmintrin.h>
 #include "skeet/misc/fov_owner.hpp"
 #include "skeet/misc/logs.hpp"
+#include "skeet/misc/hidden_cvars.hpp"
 #include "skeet/script/bridge.hpp"
 #include <cmath>
 #include <cstdio>
@@ -1291,20 +1292,37 @@ void ErrorLog::vformat(const char* format, std::va_list arguments) {
 void NormalLog::write(std::string_view text) {
     format("%.*s", static_cast<int>(text.size()), text.data());
 }
-void NormalLog::console_format(const char* format, ...) {
-    if (*disabled)
+namespace {
+void print_console(const NormalLog& log, const char* status, std::uint32_t color,
+                   const char* format, std::va_list args) {
+    if (*log.disabled)
         return;
     std::array<char, 1024> message{};
-    std::va_list arguments;
-    va_start(arguments, format);
-    const auto count = vsnprintf(message.data(), message.size() - 2, format, arguments);
-    va_end(arguments);
+    const auto count = vsnprintf(message.data(), message.size() - 2, format, args);
     if (count <= 0 || count >= std::int32_t(message.size() - 2))
         return;
     message[std::size_t(count)] = '\n';
+    auto* const* table = *static_cast<void***>(log.cvar);
+    if (status) {
+        using ColorPrint = void (*)(void*, const std::uint32_t*, const char*, ...);
+        reinterpret_cast<ColorPrint>(table[25])(log.cvar, &color, "%s", status);
+    }
     using Print = void (*)(void*, const char*, ...);
-    reinterpret_cast<Print>((*static_cast<void***>(cvar))[26])(cvar, "[supremacy] %s",
-                                                               message.data());
+    reinterpret_cast<Print>(table[26])(log.cvar, "[supremacy] %s", message.data());
+}
+}
+void NormalLog::console_format(const char* format, ...) {
+    std::va_list arguments;
+    va_start(arguments, format);
+    print_console(*this, nullptr, 0, format, arguments);
+    va_end(arguments);
+}
+void NormalLog::console_status(bool success, const char* format, ...) {
+    std::va_list arguments;
+    va_start(arguments, format);
+    print_console(*this, success ? "YES " : "NO ", success ? 0xFF60DC55u : 0xFF5050E6u,
+                  format, arguments);
+    va_end(arguments);
 }
 void NormalLog::format(const char* format, ...) {
     std::va_list arguments;
@@ -4013,6 +4031,63 @@ void Runtime::upgrade_tablet_changed() {
 } // namespace skeet::misc
 
 // ============================================================================
+// ============================================================================
+// Subcomponent: hidden_cvars.cpp
+// ============================================================================
+
+namespace skeet::misc {
+namespace {
+constexpr std::uint32_t hidden_flags = (1u << 1) | (1u << 4);
+}
+HiddenCvars::~HiddenCvars() {
+    if (cvar && enabled_)
+        set_enabled(false);
+}
+void HiddenCvars::set_enabled(bool enabled) {
+    if (enabled == enabled_)
+        return;
+    if (!cvar)
+        throw std::logic_error("Hidden cvars require the engine's VEngineCvar007 interface");
+    ConsoleCommandBase* first;
+    // vstdlib!CCvar::UnregisterConCommands: head at +30, next at +4.
+    std::memcpy(&first, static_cast<const std::byte*>(cvar) + 0x30, sizeof(first));
+    update(first, enabled);
+    enabled_ = enabled;
+}
+void HiddenCvars::update(ConsoleCommandBase* first, bool enabled) {
+    for (auto* command = first; command; command = command->next) {
+        if (!command->name)
+            continue;
+        if (enabled) {
+            const auto flags = command->flags & hidden_flags;
+            if (!flags)
+                continue;
+            auto [entry, inserted] = removed_.try_emplace(
+                command, RemovedFlags{command->name, flags});
+            if (!inserted) {
+                if (entry->second.name != command->name)
+                    entry->second = {command->name, flags};
+                else
+                    entry->second.flags |= flags;
+            }
+            command->flags &= ~hidden_flags;
+        } else {
+            const auto found = removed_.find(command);
+            // Restore only still-registered objects, preserving unrelated flag changes.
+            if (found != removed_.end() && found->second.name == command->name)
+                command->flags |= found->second.flags;
+        }
+    }
+    if (!enabled)
+        removed_.clear();
+}
+#if UINTPTR_MAX == UINT32_MAX
+static_assert(offsetof(ConsoleCommandBase, next) == 4);
+static_assert(offsetof(ConsoleCommandBase, name) == 0xC);
+static_assert(offsetof(ConsoleCommandBase, flags) == 0x14);
+#endif
+}
+
 // Subcomponent: settings_runtime.cpp
 // ============================================================================
 
@@ -4067,6 +4142,9 @@ void SettingsRuntime::allow_custom_events_changed() { // 0x4333D25B
     if (value != previous_custom_events && engine::invoke<bool>(engine, 26))
         *(static_cast<std::uint8_t*>(custom_event_state) + 0xA0) = 1;
     previous_custom_events = value;
+}
+void SettingsRuntime::unlock_hidden_cvars_changed() {
+    hidden_cvars.set_enabled(unlock_hidden_cvars && *unlock_hidden_cvars);
 }
 
 void SettingsRuntime::reset_menu_layout() { // 0x43342FF1 with native built-in block
@@ -4151,6 +4229,7 @@ SettingsRuntimeOwner::SettingsRuntimeOwner(client::ClientRuntimeStorage& storage
     runtime_.dpi_scale = &settings.settings_menu().dpi_scale;
     runtime_.lock_layout = &settings.settings_menu().lock_layout;
     runtime_.allow_custom_events = &settings.custom_events().enabled.value;
+    runtime_.hidden_cvars.cvar = storage.data().native_cell<void*>(0x4346A87Cu);
 }
 void SettingsRuntimeOwner::capture_default_layout(ui::RootMenu& menu) {
     if (layout_captured_)

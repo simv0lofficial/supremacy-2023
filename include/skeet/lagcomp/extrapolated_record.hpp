@@ -3,6 +3,7 @@
 #include "skeet/client/command_frame.hpp"
 #include "skeet/client/player_state.hpp"
 #include "skeet/resolver_runtime/build.hpp"
+#include "skeet/rage/experimental_switch.hpp"
 #include <optional>
 
 namespace skeet {
@@ -24,6 +25,8 @@ struct ExtrapolatedRecordBindings {
     animation::BoneSourceReference<resolver_runtime::HypothesisBuildContext> bones;
     const MovementExtrapolationBindings& movement;
     std::optional<std::int32_t> prediction_limit; // decoded fixture result; absent in live entry
+    rage::ExperimentalSwitch validate_record{};
+    rage::ExperimentalSwitch rebuild_pose{};
 };
 
 // Complete4339C8E2. Unlike the hypothesis builder's80300 mask, this entry
@@ -33,13 +36,14 @@ void build_extrapolated_record_matrices(LagRecord&, resolver_runtime::Hypothesis
                                         std::span<Matrix3x4, 256> scratch);
 // Live4339C8E2 entry. The model/set is read from this player after the build.
 void build_extrapolated_record_matrices(void* player, LagRecord&, const animation::BoneRuntime&,
-                                        std::span<Matrix3x4, 256> scratch);
+                                        std::span<Matrix3x4, 256> scratch, bool strict = false,
+                                        float interval = 0.0f);
 
 // Concrete input projection for433FAC08. The original valid-player contract
 // requires its animation state for the ensuing hypothesis computation.
 resolver_runtime::HypothesisInput
 capture_record_hypothesis_input(void* player, const client::PlayerState&, const LagRecord&,
-                                const EntityStateRuntime&) noexcept;
+                                const EntityStateRuntime&, bool use_record_yaw = false) noexcept;
 
 // Complete43387BCE transaction. The networkable index/cache lookup is repeated
 // here as in native. A stale/empty history captures live state; the other path

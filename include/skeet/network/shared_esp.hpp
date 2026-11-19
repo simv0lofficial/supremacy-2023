@@ -13,17 +13,18 @@ namespace skeet::network {
 
 struct SharedEspPacket {
     std::array<std::byte, 20> bytes;
-    // Native fifth 16-bit pair crosses packet+20 into this saved index.
+    // The sender belongs to the voice envelope, not the encrypted payload.
     std::int32_t sender_index;
 };
-void decrypt_shared_esp_packet(SharedEspPacket&, std::uint32_t mixing_key) noexcept;
 struct SharedEspFields {
     std::uint16_t marker;
     std::int32_t tick;
     std::uint32_t entity_index, yaw;
     esp::Vector3 origin;
 };
-SharedEspFields decode_shared_esp_packet(const SharedEspPacket&) noexcept;
+bool decode_shared_esp_packet(SharedEspPacket, const client::RejectedPlayerUpdateOwner&,
+                             std::uint32_t sender_account, std::uint32_t sender_user_id,
+                             SharedEspFields&) noexcept;
 
 struct SharedEspOffsets {
     std::ptrdiff_t life_state;

@@ -208,38 +208,42 @@ int EntityModule::set_prop(void* state) {
     auto type = metadata.type;
     if (!property_address(state, 4, metadata, address, type))
         return 0;
+    // The original numeric setters use lua_to* conversions. Values such as
+    // false convert to zero. Entity handles have their own checked path.
     switch (type) {
     case 0:
-        write(address, 0, static_cast<std::int32_t>(lua().checkinteger(state, 3)));
+        write(address, 0, static_cast<std::int32_t>(lua().tointeger(state, 3)));
         break;
     case 1:
-        write(address, 0, static_cast<float>(lua().checknumber(state, 3)));
+        write(address, 0, static_cast<float>(lua().tonumber(state, 3)));
         break;
     case 2:
     case 3:
         for (int i = 3, count = lua().gettop(state); i < 6 && i <= count; ++i)
-            write(address, (i - 3) * 4, static_cast<float>(lua().checknumber(state, i)));
+            write(address, (i - 3) * 4, static_cast<float>(lua().tonumber(state, i)));
         break;
     case 4: {
         std::size_t length = 0;
         const auto* string = lua().tolstring(state, 3, &length);
-        if (length < metadata.element_count)
+        if (string && length < metadata.element_count)
             std::memcpy(address, string, length);
         break;
     }
     case 7:
         write(address, 0,
-              static_cast<std::int64_t>(static_cast<std::int32_t>(lua().checkinteger(state, 3))));
+              static_cast<std::int64_t>(static_cast<std::int32_t>(lua().tointeger(state, 3))));
         break;
     case 9:
-        write(address, 0, static_cast<std::uint8_t>(lua().checkinteger(state, 3)));
+        write(address, 0, static_cast<std::uint8_t>(lua().tointeger(state, 3)));
         break;
     case 10:
-        write(address, 0, static_cast<std::int16_t>(lua().checkinteger(state, 3)));
+        write(address, 0, static_cast<std::int16_t>(lua().tointeger(state, 3)));
         break;
     case 11: {
-        const auto argument = static_cast<std::uint32_t>(lua().tointeger(state, 3));
-        if (lua().type(state, 3) == 0 || argument == UINT32_MAX)
+        const auto argument = lua().type(state, 3) == 0
+                                  ? UINT32_MAX
+                                  : static_cast<std::uint32_t>(lua().checkinteger(state, 3));
+        if (argument == UINT32_MAX)
             write(address, 0, UINT32_MAX);
         else if (argument >= 8192)
             lua().argerror(state, 3, "invalid entity index");

@@ -84,6 +84,15 @@ struct SpreadCache {
     std::array<RageSpreadSample, 128> compensated;
     std::uint32_t generation;
 };
+// One complete engine seed outcome. Pellets remain separate rays.
+struct CompleteSpread {
+    static constexpr unsigned seed_count = 256, maximum_pellets = 16;
+    std::array<std::array<RageSpreadSample, maximum_pellets>, seed_count> rays{};
+    unsigned pellets = 0;
+    bool valid = false;
+};
+bool prepare_complete_spread(CompleteSpread&, const SpreadParameters&, const SpreadTables&,
+                              const SpreadRandom&, const ShotgunPattern&, const RageTrigonometry&);
 // Full preparation loop 433C1977..433C1B9A. Enabled is context flags +178 mask10;
 // generation is the weapon marker +AC, cached at aim context +1C4. combined_spread
 // is weapon context +160; compensated inaccuracy is combined_spread - spread.
@@ -92,4 +101,5 @@ bool prepare_spread_cache(SpreadCache&, const SpreadParameters&, float combined_
                           const SpreadRandom&, const ShotgunPattern&, const RageTrigonometry&);
 // The 32-sample consumer at 433600FE advances 0x20 bytes through the 8-byte cache.
 std::array<RageSpreadSample, 32> hitchance_spread_samples(const SpreadCache&) noexcept;
+std::uint32_t cached_spread_seed(std::uint32_t index) noexcept;
 } // namespace skeet::rage

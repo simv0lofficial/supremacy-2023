@@ -166,7 +166,8 @@ ColorPicker::ColorPicker() {
 }
 ColorPicker::ColorPicker(Widget* owner, std::uint32_t* setting, WidgetIdentities& identities)
     : Widget(owner, u"", 12, setting != nullptr, identities), value(setting),
-      popup(this, {u"Copy", u"Paste"}, identities) { // 0x43406A63
+      popup(this, {u"Copy", u"Paste", u"Reset"}, identities),
+      default_color_(setting ? *setting : 0) { // 0x43406A63
     inline_element = true;
     geometry.default_size = {17, 11};
     geometry.bounds.width = 17;
@@ -323,6 +324,10 @@ void ColorPicker::menu_selected(Widget& owner, PopupMenu&, std::uint32_t index) 
             picker.config_loaded();
             picker.value_changed();
         }
+    } else if (index == 2 && *picker.value != picker.default_color_) {
+        *picker.value = picker.default_color_;
+        picker.config_loaded();
+        picker.value_changed();
     }
 }
 void ColorPicker::draw(RenderQueue& queue, Point origin, std::uint32_t accent) const { // 0x4333C000

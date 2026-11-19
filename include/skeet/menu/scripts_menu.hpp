@@ -8,6 +8,7 @@ class ScriptManager;
 }
 
 namespace skeet::ui {
+class ConfigPresetsMenu;
 
 struct ScriptsMenuValues {
     std::uint8_t& enabled; // 0x434675D4
@@ -53,18 +54,27 @@ public:
     std::uint64_t (*read_time)(void*) = script_menu_time;
     void refresh();
     void activate();
+    void bind_presets(ConfigPresetsMenu&);
     // 0x433DF55B dispatch and the distinct startup controller 0x4341AABA.
     void initialize_startup(const char* command_line, std::span<const std::uint32_t, 128> hashes);
 
 private:
+    class ScriptList;
     static void enabled_changed(void*, Widget&);
     static void unsafe_changed(void*, Widget&);
     static void reload_active(void*, Widget&);
     static void selection_changed(void*, Widget&);
     static void startup_changed(void*, Widget&);
+    static void preset_selected(void*, Widget&);
+    static void script_selected(void*, Widget&);
+    static void preset_refreshed(void*, Widget&);
     static void load(void*, Widget&);
     static void unload(void*, Widget&);
     void update_selection();
+    void update_startup_selection();
+    ConfigPresetsMenu* presets_ = nullptr;
+    bool preset_target_ = false;
+    std::uint8_t startup_value_ = 0;
     Tab& tab_;
     ScriptsCategory category_;
     ScriptsMenuValues values_;

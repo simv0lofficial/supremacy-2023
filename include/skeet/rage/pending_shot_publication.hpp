@@ -24,7 +24,8 @@ struct PendingShotPublicationBindings {
     const float* interval; // *4346A338
     const std::uint32_t* scheduler_flags; //434759C0
     resolver_runtime::AttemptEngineBinding attempts;
-    const std::uint8_t* resolver_rework = nullptr;
+    ExperimentalSwitch resolver_rework{};
+    ExperimentalSwitch jitter_fix{};
 };
 
 // Complete433CCA5C. The original null-system path copies4346F1B8; otherwise
@@ -47,6 +48,5 @@ void shot_capture_target(ShotFeedbackRecord&, const lagcomp::EvaluationState&,
 // callbacks; only the native captured record survives the later engine calls.
 // False is the native absent-owner/disabled-recording gate.
 bool publish_pending_shot(const client::CommandFrame&, const lagcomp::EvaluationState&,
-                          std::int32_t shot_index, const PendingShotPublicationBindings&,
-                          std::int32_t extrapolation_ticks = 0);
+                          std::int32_t shot_index, const PendingShotPublicationBindings&);
 }

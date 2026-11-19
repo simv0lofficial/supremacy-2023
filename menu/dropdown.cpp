@@ -393,7 +393,7 @@ bool Listbox::mouse(const InputMessage& message, Point cursor) { // 0x4336C227
             set_selection(std::uint32_t(index));
             if (value)
                 *value = options[selected_item].value;
-            notify_callbacks();
+            notify_selection();
         }
         return true;
     }
@@ -418,7 +418,7 @@ bool Listbox::keyboard(const InputMessage& message) { // 0x433F2387
                 set_selection(std::uint32_t(sub(selected_item, 1)));
                 if (value)
                     *value = options[selected_item].value;
-                notify_callbacks();
+                notify_selection();
                 const auto position = mul(selected_item, row_height);
                 if (position < mul(divide(scroll.position, row_height), row_height)) {
                     scroll.position = position;
@@ -432,7 +432,7 @@ bool Listbox::keyboard(const InputMessage& message) { // 0x433F2387
                 set_selection(std::uint32_t(add(selected_item, 1)));
                 if (value)
                     *value = options[selected_item].value;
-                notify_callbacks();
+                notify_selection();
                 if (mul(selected_item, row_height) >=
                     mul(add(divide(scroll.position, row_height), visible_rows), row_height)) {
                     scroll.position = mul(add(sub(selected_item, visible_rows), 1), row_height);
@@ -483,6 +483,11 @@ void Listbox::value_changed() {
     config_loaded();
     notify_callbacks();
 } // 0x433EE5AD
+void Listbox::notify_selection() {
+    notify_callbacks();
+    for (const auto& callback : selection_callbacks)
+        callback.function(callback.context, *this);
+}
 void Listbox::reset_input() {
     hovered = search_active = scroll.dragging = false;
 } // 0x433BA433

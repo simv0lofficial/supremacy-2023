@@ -1,8 +1,16 @@
 #pragma once
 #include "skeet/config.hpp"
 #include "skeet/movement_config.hpp"
+#include "experimental_switch.hpp"
 
 namespace skeet::rage {
+inline constexpr std::uint32_t experimental_rage_hash = 0xDCE86521u;
+enum class ExperimentalRageOption { animation, resolver, records, extrapolated_pose, damage, hitchance, count };
+inline constexpr std::array<std::uint32_t, std::size_t(ExperimentalRageOption::count)>
+    experimental_rage_option_hashes{0x7C997C9Du, 0x8A4FC503u, 0x3EDE50EDu,
+                                    0xC0303778u, 0x250AAD80u, 0xDEA7D2B2u};
+inline constexpr std::array active_experimental_rage_options{
+    ExperimentalRageOption::animation, ExperimentalRageOption::extrapolated_pose};
 // Static descriptors retain their stored boolean values. The native startup
 // routines write only the integer/key defaults identified below.
 struct GlobalSettings {
@@ -57,6 +65,22 @@ struct GlobalSettings {
                                  0}; // 0x4346708C; CRT default 15
     BooleanConfig pattern_recoil_correction{
         {{nullptr, nullptr, 0xA434F7C7u}, 1, ConfigType::boolean, 0}, 0}; //0x43467CA4
+    BooleanConfig jitter_fix{{{nullptr, nullptr, 0x8C2E9D71u}, 1, ConfigType::boolean, 0}, 0};
+    BooleanConfig experimental_rage{
+        {{nullptr, nullptr, experimental_rage_hash}, 1, ConfigType::boolean, 0}, 0};
+    std::array<BooleanConfig, experimental_rage_option_hashes.size()> experimental_options = [] {
+        std::array<BooleanConfig, experimental_rage_option_hashes.size()> options{};
+        for (const auto option : active_experimental_rage_options) {
+            const auto i = std::size_t(option);
+            options[i] = {{{nullptr, nullptr, experimental_rage_option_hashes[i]},
+                           1, ConfigType::boolean, 0}, 1};
+        }
+        return options;
+    }();
+
+    ExperimentalSwitch experimental(ExperimentalRageOption option) const noexcept {
+        return {&experimental_options[std::size_t(option)].value, &experimental_rage.value};
+    }
 };
 
 // Configuration subset of owner 0x434803BC. Its visualization descriptors
@@ -90,7 +114,9 @@ struct ExploitSettings {
 };
 struct ShotLogSettings {
     BooleanConfig spread_misses; // owner 0x4347F708, +038; true
+    BooleanConfig detailed;
 };
+inline constexpr std::uint32_t detailed_shot_log_hash = 0x0E3BBCB6u;
 struct PerformanceSettings {
     IntegerConfig mitigations; // owner 0x4347E6F2, +014; stored value survives
     BooleanConfig warning; // +028; shared MISC / Settings descriptor 0x740C32AE

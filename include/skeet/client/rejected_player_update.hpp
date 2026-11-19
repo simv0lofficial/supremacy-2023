@@ -17,7 +17,10 @@ enum class SharedEspPacketCipher {
 // engine message constructors/destructors discovered by 43485EF1..43485F5C.
 // No recovered payload entrypoint is called through these bindings.
 struct RejectedPlayerUpdateOwner {
-    std::array<std::uint8_t, 16> packet_key{}; // native +24..33
+    // Initialized native +24..33, verified against original-client wire captures.
+    std::array<std::uint8_t, 16> packet_key{
+        0x68, 0x33, 0x05, 0x97, 0x36, 0x06, 0xd4, 0xea,
+        0x4f, 0xc4, 0xa4, 0x3e, 0x85, 0xb2, 0xac, 0x0f};
     std::uint32_t mixing_key = 0xc8eac742u; // +34
     std::uint16_t marker = 0x2424; // +74
     float timer_84 = 0; // +84, empty-tick timer owner

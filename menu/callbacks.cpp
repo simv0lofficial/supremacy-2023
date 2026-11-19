@@ -33,6 +33,7 @@
 #include "skeet/menu/rage_weapon_groups.hpp"
 #include "skeet/menu/rage_weapon_selector.hpp"
 #include "skeet/menu_tree.hpp"
+#include "skeet/popup_menu.hpp"
 #include "skeet/scrollbar_render.hpp"
 #include "skeet/menu/root_menu.hpp"
 #include "skeet/rage/group_storage.hpp"
@@ -44,6 +45,10 @@
 #include "skeet/render/menu_window_assets.hpp"
 #include "skeet/render/dpi_bridge.hpp"
 #include "skeet/input/runtime.hpp"
+#include "skeet/rage/settings.hpp"
+#include <shlobj.h>
+#include <shellapi.h>
+#include <shobjidl.h>
 #include <optional>
 #include "skeet/engine/interface_call.hpp"
 #include "skeet/menu/scripts_menu.hpp"
@@ -341,6 +346,41 @@ std::vector<ConfigDescriptor*> collect_category_config(Category& category,
     }
     return descriptors;
 }
+std::vector<ConfigDescriptor*> collect_tab_config(const Tab& tab, ConfigLink& registry) {
+    std::vector<std::uintptr_t> values;
+    for (const auto* category : tab.categories) {
+        std::shared_lock lock(category->elements_mutex);
+        for (const auto* widget : category->elements) {
+            switch (widget->kind) {
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 9:
+            case 12:
+            case 13:
+                if (const auto* value = widget_value(*widget))
+                    values.push_back(reinterpret_cast<std::uintptr_t>(value));
+                break;
+            }
+        }
+    }
+    std::ranges::sort(values);
+    std::vector<ConfigDescriptor*> descriptors;
+    for (auto* link = registry.next; link && link != &registry; link = link->next) {
+        auto& descriptor = static_cast<ConfigDescriptor&>(*link);
+        if (descriptor.type == ConfigType::blob)
+            continue;
+        // Composite controls point into a descriptor (for example, the
+        // selected weapon's slot in a LEGIT array).
+        const auto bytes = config_value_bytes(descriptor);
+        const auto address = reinterpret_cast<std::uintptr_t>(bytes.data());
+        const auto value = std::ranges::lower_bound(values, address);
+        if (value != values.end() && *value - address < bytes.size())
+            descriptors.push_back(&descriptor);
+    }
+    return descriptors;
+}
 bool category_config_loading() noexcept {
     return config_loading_flag();
 }
@@ -349,12 +389,12 @@ void load_category_config_values(std::span<ConfigDescriptor*> descriptors,
                                  std::span<const std::byte> baseline_a,
                                  std::span<const std::byte> baseline_b) { // 0x43369B2C
     auto& loading = config_loading_flag();
-    loading = true;
+    const bool previous = std::exchange(loading, true);
     for (const auto stream : {baseline_a, baseline_b, selected})
         if (!stream.empty())
             for (auto* descriptor : descriptors)
                 deserialize_config_value(*descriptor, stream, loading);
-    loading = false;
+    loading = previous;
 }
 bool save_category_config(MenuWindow& window, ConfigLink& registry, std::string_view tab_name,
                           std::string_view category_name, ConfigBytes& output,
@@ -481,6 +521,8 @@ void ConfigPresetsMenu::synchronize_selection() {
     hotkey_->config_loaded();
     hotkey_->set_visible(hotkey_->value != nullptr);
     hotkey_->enabled = hotkey_->value != nullptr;
+    if (selection_refreshed.function)
+        selection_refreshed.function(selection_refreshed.context, *list_);
 }
 
 void ConfigPresetsMenu::refresh() {
@@ -850,6 +892,10 @@ LegitMenu::~LegitMenu() {
     for (auto* category : categories())
         std::erase(tab_.categories, category);
 }
+void LegitMenu::append_weapon_keys(std::vector<ConfigDescriptor*>& descriptors) const {
+    descriptors.insert(descriptors.end(), aim_keys_.begin(), aim_keys_.end());
+    descriptors.insert(descriptors.end(), trigger_keys_.begin(), trigger_keys_.end());
+}
 void LegitMenu::weapon_changed(void* context, Widget&) {
     static_cast<LegitMenu*>(context)->bind_weapon(); // 0x4334B817
 }
@@ -1215,8 +1261,10 @@ SettingsMenu::SettingsMenu(Tab& tab, ConfigRegistries& settings, WidgetIdentitie
     runtime_.dpi_scale = &values.dpi_scale;
     runtime_.lock_layout = &values.lock_layout;
     runtime_.allow_custom_events = value<BooleanConfig>(settings, 0x526A2BF4);
-    storage_.reserve(21);
-    bindings_.reserve(21);
+    initialize_boolean_config(settings.descriptors, unlock_hidden_cvars_, 0x331C4230u);
+    runtime_.unlock_hidden_cvars = &unlock_hidden_cvars_.value;
+    storage_.reserve(24);
+    bindings_.reserve(24);
     tab.categories.push_back(&category_);
     auto checkbox = [&](std::uint32_t hash, std::u16string_view name) -> Checkbox& {
         return add<Checkbox>(category_, hash, name, value<BooleanConfig>(settings, hash),
@@ -1229,13 +1277,6 @@ SettingsMenu::SettingsMenu(Tab& tab, ConfigRegistries& settings, WidgetIdentitie
                       std::uint32_t suffix) -> Slider& {
         return add<Slider>(category_, 0, name, low, high, &setting, true, suffix, 1.0f, identities);
     };
-    std::array<Widget*, 10> hidden{};
-    std::size_t hidden_count = 0;
-    auto hide = [&](Widget& control) -> Widget& {
-        hidden[hidden_count++] = &control;
-        return control;
-    };
-
     add<Label>(category_, 0, u"Menu key", identities);
     add<HotkeyWidget>(category_, 0, &values.menu_key, false, identities);
     add<Label>(category_, 0, u"Menu color", identities);
@@ -1246,35 +1287,36 @@ SettingsMenu::SettingsMenu(Tab& tab, ConfigRegistries& settings, WidgetIdentitie
     dpi.set_options({{u"100%", 0}, {u"125%", 1}, {u"150%", 2}, {u"175%", 3}, {u"200%", 4}});
     dpi.callbacks.push_back({this, dpi_scale_changed});
     checkbox(0x851E6ABE, u"Anti-untrusted");
+    add<Checkbox>(category_, 0x331C4230u, u"Unlock hidden cvars", &unlock_hidden_cvars_.value,
+                  identities).callbacks.push_back({this, unlock_hidden_cvars_changed});
     auto& custom = checkbox(0x526A2BF4, u"Allow custom game events");
-    hide(custom);
     custom.callbacks.push_back({this, allow_custom_events_changed});
     custom.color = 0xBB82F0F0;
     checkbox(0x643364E6, u"Hide from OBS");
     checkbox(0x740C32AE, u"Low FPS warning");
     direct_checkbox(u"Lock menu layout", values.lock_layout)
         .callbacks.push_back({this, lock_layout_changed});
-    hide(direct_checkbox(u"Multithreading", values.multithreading));
+    direct_checkbox(u"Multithreading", values.multithreading);
     add<Button>(category_, 0, u"Reset menu layout", Point{158, 28},
                 WidgetCallback{this, reset_layout}, identities);
     add<Button>(category_, 0, u"Unload", Point{158, 28}, WidgetCallback{this, unload}, identities);
     auto& unlag = slider(u"sv_maxunlag2", 200, 1000, values.maximum_unlag, 0x0073006D);
-    hide(unlag);
     unlag.callbacks.push_back({this, maximum_unlag_changed});
     auto& ticks = slider(u"sv_maxusrcmdprocessticks2", 4, 62, values.maximum_usercmd_ticks, 0);
     maximum_usercmd_ticks_ = &ticks;
-    hide(ticks);
     ticks.callbacks.push_back({this, maximum_usercmd_ticks_changed});
-    hide(slider(u"sv_clockcorrection_msecs2", 0, 1000, values.clock_correction, 0x0073006D));
-    hide(direct_checkbox(u"sv_maxusrcmdprocessticks_holdaim", values.hold_aim));
-    hide(direct_checkbox(u"Fix viewmodel lag", values.fix_viewmodel_lag));
-    hide(direct_checkbox(u"Fix networking", values.fix_networking));
-    hide(direct_checkbox(u"Fix animations", values.fix_animations));
-    hide(direct_checkbox(u"Faster grenade toss", values.faster_grenade_toss));
-    for (auto* control : hidden)
-        control->set_visible(false);
+    slider(u"sv_clockcorrection_msecs2", 0, 1000, values.clock_correction, 0x0073006D);
+    direct_checkbox(u"sv_maxusrcmdprocessticks_holdaim", values.hold_aim);
+    direct_checkbox(u"Fix viewmodel lag", values.fix_viewmodel_lag);
+    direct_checkbox(u"Fix networking", values.fix_networking);
+    direct_checkbox(u"Fix animations", values.fix_animations);
+    direct_checkbox(u"Faster grenade toss", values.faster_grenade_toss);
 }
 SettingsMenu::~SettingsMenu() {
+    runtime_.hidden_cvars.set_enabled(false);
+    runtime_.unlock_hidden_cvars = nullptr;
+    unlock_hidden_cvars_.previous->next = unlock_hidden_cvars_.next;
+    unlock_hidden_cvars_.next->previous = unlock_hidden_cvars_.previous;
     std::erase(tab_.categories, &category_);
 }
 void SettingsMenu::dpi_scale_changed(void* context, Widget& widget) {
@@ -1284,6 +1326,9 @@ void SettingsMenu::dpi_scale_changed(void* context, Widget& widget) {
 }
 void SettingsMenu::allow_custom_events_changed(void* context, Widget&) {
     static_cast<SettingsMenu*>(context)->runtime_.allow_custom_events_changed();
+}
+void SettingsMenu::unlock_hidden_cvars_changed(void* context, Widget&) {
+    static_cast<SettingsMenu*>(context)->runtime_.unlock_hidden_cvars_changed();
 }
 void SettingsMenu::lock_layout_changed(void* context, Widget&) {
     static_cast<SettingsMenu*>(context)->runtime_.lock_layout_changed();
@@ -1935,22 +1980,50 @@ void write_rage_clipboard(std::span<const std::byte> value, RageClipboardApi& ap
     }
     api.close(api.context);
 }
-void read_rage_clipboard(ConfigBytes& destination, RageClipboardApi& api) { // 0x43394985
+namespace {
+void read_clipboard(ConfigBytes& destination, RageClipboardApi& api, bool native_pointer) {
     if (!api.available(api.context, 1) || !api.open(api.context, 0))
         return;
     if (const auto memory = api.get_data(api.context, 1)) {
         if (const auto text = api.wire(api.context, memory)) {
-            // The native routine passes the locked pointer to both APIs.
-            const auto pointer = reinterpret_cast<std::uintptr_t>(text);
-            const auto capacity = api.size(api.context, pointer);
+            const auto handle = native_pointer ? reinterpret_cast<std::uintptr_t>(text) : memory;
+            const auto capacity = api.size(api.context, handle);
             std::size_t length = 0;
             while (length < capacity && text[length])
                 ++length;
             destination = decode_config_export(std::string_view(text, length));
-            api.unlock(api.context, pointer);
+            api.unlock(api.context, handle);
         }
     }
     api.close(api.context);
+}
+}
+void read_rage_clipboard(ConfigBytes& destination, RageClipboardApi& api) { // 0x43394985
+    read_clipboard(destination, api, true);
+}
+void read_config_clipboard(ConfigBytes& destination, RageClipboardApi& api) {
+    read_clipboard(destination, api, false);
+}
+void write_config_clipboard(std::span<const std::byte> value, RageClipboardApi& api,
+                            std::uintptr_t window) {
+    if (value.empty())
+        return;
+    const auto encoded = encode_config_export(value);
+    const auto memory = api.allocate(api.context, GMEM_MOVEABLE, encoded.size() + 1);
+    if (!memory)
+        return;
+    const auto text = api.wire(api.context, memory);
+    if (text) {
+        std::memcpy(const_cast<char*>(text), encoded.c_str(), encoded.size() + 1);
+        api.unlock(api.context, memory);
+        if (api.open(api.context, window)) {
+            const bool transferred = api.empty(api.context) && api.set_data(api.context, CF_TEXT, memory);
+            api.close(api.context);
+            if (transferred)
+                return;
+        }
+    }
+    api.free(api.context, memory);
 }
 RageWeaponSelectorActions
 rage_weapon_clipboard_actions(RageWeaponClipboardContext& context) noexcept {
@@ -2150,6 +2223,11 @@ constexpr Requirement rage_other_requirements[] = {
     {0x2B385DC7, ConfigType::integer}, {0x141C9037, ConfigType::boolean},
     {0xEC178029, ConfigType::hotkey},  {0x4F67FC33, ConfigType::integer},
     {0xC9FCBE4B, ConfigType::color},   {0x4CB8E4AA, ConfigType::integer},
+    {rage::experimental_rage_hash, ConfigType::boolean},
+    {rage::experimental_rage_option_hashes[std::size_t(rage::ExperimentalRageOption::animation)],
+     ConfigType::boolean},
+    {rage::experimental_rage_option_hashes[std::size_t(rage::ExperimentalRageOption::extrapolated_pose)],
+     ConfigType::boolean},
 };
 }
 RageOtherMenu::RageOtherMenu(Tab& tab, ConfigRegistries& settings, WidgetIdentities& identities)
@@ -2157,8 +2235,8 @@ RageOtherMenu::RageOtherMenu(Tab& tab, ConfigRegistries& settings, WidgetIdentit
     require_settings(settings, rage_other_requirements);
     tab.categories.push_back(&category_); //43487B42, before the first bound control.
     category_.movable = category_.resizable = false;
-    storage_.reserve(14);
-    bindings_.reserve(19);
+    storage_.reserve(14 + experimental_links_.size());
+    bindings_.reserve(19 + experimental_links_.size());
     auto checkbox = [&](std::uint32_t hash, std::u16string_view label) -> Checkbox& {
         return add<Checkbox>(category_, hash, label, value<BooleanConfig>(settings, hash),
                              identities);
@@ -2195,6 +2273,17 @@ RageOtherMenu::RageOtherMenu(Tab& tab, ConfigRegistries& settings, WidgetIdentit
     mitigations.add_option("Disable hitbox: feet", 0x10);
     mitigations.add_option("Lower hit chance precision", 0x40);
     mitigations.add_option("Limit targets per tick", 0x80);
+    auto& experimental = checkbox(rage::experimental_rage_hash, u"Experimental RAGE");
+    experimental.color = 0xBB82F0F0;
+    using Option = rage::ExperimentalRageOption;
+    constexpr auto& hashes = rage::experimental_rage_option_hashes;
+    auto& animation = checkbox(hashes[std::size_t(Option::animation)], u"Animation rebuild");
+    auto& extrapolation = checkbox(hashes[std::size_t(Option::extrapolated_pose)],
+                                   u"Extrapolated pose rebuild");
+    experimental_links_[0] = {&animation, &experimental_links_[1]};
+    experimental_links_[1] = {&extrapolation, &experimental.tied};
+    experimental.tied.next = &experimental_links_.front();
+    experimental.config_loaded();
 }
 RageOtherMenu::~RageOtherMenu() {
     std::erase(tab_.categories, &category_);
@@ -2225,6 +2314,20 @@ void switch_rage_weapon_group(RageWeaponGroupState& state, const std::uint32_t* 
                          state.groups[selected]->value, state.baseline_a.bytes(),
                          state.baseline_b.bytes());
     state.last_group = selected;
+}
+void reload_rage_weapon_groups_from_preset(RageWeaponGroupState& state,
+                                           const std::uint32_t& selected, bool initialize_global) {
+    state.last_group = UINT32_MAX;
+    if (selected >= state.groups.size())
+        return;
+    if (initialize_global && state.groups[0]->value.empty()) {
+        ConfigBytes changes;
+        save_category_config(state.window, state.registry, "rage", "aimbot", changes,
+                             state.baseline_a.bytes(), state.baseline_b.bytes());
+        if (changes.size() > 12)
+            state.groups[0]->value = std::move(changes);
+    }
+    switch_rage_weapon_group(state, &selected);
 }
 }
 
@@ -2602,6 +2705,10 @@ void RageWeaponSelector::draw(RenderQueue& queue, Point origin,
 namespace skeet::ui {
 
 namespace {
+struct ScopedTabConfigLoad {
+    const bool previous = std::exchange(config_loading_flag(), true);
+    ~ScopedTabConfigLoad() { config_loading_flag() = previous; }
+};
 void aa_notification(MenuWindow&, std::uint32_t);
 struct AANotification {
     MenuWindow& window;
@@ -2734,6 +2841,7 @@ struct RootConfigTab final : Tab {
         : Tab(window.navigation, window.input, window.geometry, u"CONFIG", next, b.identities),
           presets(*this, b.identities, b.presets),
           scripts(*this, b.identities, b.script_values, b.scripts.modules().manager()) {
+        scripts.bind_presets(presets);
         presets.refresh();
     }
     void activate() override {
@@ -2762,10 +2870,21 @@ void activate_tab(void* raw) {
 }
 
 struct RootMenu::Data {
+    struct TabConfigPopup : PopupMenu {
+        Data& owner;
+        TabConfigPopup(Data& data, WidgetIdentities& identities)
+            : PopupMenu(nullptr, {u"Copy", u"Paste"}, identities), owner(data) {
+            selected = [](Widget& tab, PopupMenu& popup, std::uint32_t action) {
+                static_cast<TabConfigPopup&>(popup).owner.clipboard_action(static_cast<Tab&>(tab),
+                                                                          action);
+            };
+        }
+    };
     MenuWindow& window;
     RootMenuBindings bindings;
     script::UiBindings& script_ui;
     script::ClientBindings& script_client;
+    std::optional<TabConfigPopup> tab_config_popup;
     MenuWindow* window_address;
     PlayersMenu* player_menu_address = nullptr;
     MainMenuAssets assets;
@@ -2788,6 +2907,91 @@ struct RootMenu::Data {
         auto* result = tab.get();
         append_menu_tab(window, std::move(tab));
         return result;
+    }
+    std::vector<ConfigDescriptor*> tab_descriptors(Tab& tab) {
+        auto descriptors = collect_tab_config(tab, bindings.configuration.descriptors);
+        if (&tab == rage) {
+            const auto enabled = bindings.rage_groups.enabled_descriptors();
+            descriptors.insert(descriptors.end(), enabled.begin(), enabled.end());
+            const auto groups = bindings.rage_groups.blob_descriptors();
+            descriptors.insert(descriptors.end(), groups.begin(), groups.end());
+        } else if (&tab == legit) {
+            legit->menu.append_weapon_keys(descriptors);
+        } else if (&tab == skins) {
+            skins->menu.append_team_config(descriptors);
+        }
+        for (const auto& record : script_ui.records)
+            if (record.widget && record.configuration && owning_tab(record.widget) == &tab)
+                descriptors.push_back(record.configuration);
+        std::vector<ConfigDescriptor*> scope;
+        scope.reserve(descriptors.size());
+        for (auto* descriptor : descriptors) {
+            auto& header = config_native_header(*descriptor);
+            if (config_value_supported(header) && std::ranges::find(scope, &header) == scope.end())
+                scope.push_back(&header);
+        }
+        return scope;
+    }
+    void copy_tab_config(Tab& tab, std::span<ConfigDescriptor*> descriptors) {
+        ConfigBytes group;
+        const ConfigDescriptor* active_group = nullptr;
+        if (&tab == rage && rage->selected < rage->group_state.groups.size()) {
+            auto& state = rage->group_state;
+            if (save_category_config(window, state.registry, "rage", "aimbot", group,
+                                     state.baseline_a.bytes(), state.baseline_b.bytes()) &&
+                group.size() < UINT16_MAX)
+                active_group = &config_native_header(*state.groups[rage->selected]);
+        }
+        ConfigBytes stream;
+        initialize_config_stream(stream);
+        for (const auto* descriptor : descriptors) {
+            if (descriptor == active_group) {
+                auto key = config_record_key(*descriptor);
+                key.size = static_cast<std::uint16_t>(group.size());
+                append_config_record(stream, key, group);
+            } else {
+                serialize_config_value(*descriptor, stream);
+            }
+        }
+        write_config_clipboard(stream, bindings.clipboard, window.native_window);
+    }
+    void paste_tab_config(Tab& tab, std::span<ConfigDescriptor*> descriptors) {
+        ConfigBytes stream;
+        read_config_clipboard(stream, bindings.clipboard);
+        if (!valid_config_stream(stream))
+            return;
+        // A header-only preset represents defaults. Other streams must
+        // contain at least one setting belonging to the clicked tab.
+        const auto contains_setting = [&](const ConfigDescriptor* descriptor) {
+            return find_config_record(stream, config_record_key(*descriptor)).has_value();
+        };
+        if (stream.size() > 12 && !std::ranges::any_of(descriptors, contains_setting))
+            return;
+        if (&tab == rage) {
+            for (const auto* group : bindings.rage_groups.blob_descriptors()) {
+                const auto record = find_config_record(stream, config_record_key(*group));
+                if (record && !record->value.empty() && !valid_config_stream(record->value))
+                    return;
+            }
+        }
+        ScopedTabConfigLoad loading;
+        load_category_config_values(descriptors, stream, bindings.baseline_a.bytes(),
+                                    bindings.baseline_b.bytes());
+        if (&tab == rage) {
+            const auto* global = rage->group_state.groups[0];
+            reload_rage_weapon_groups_from_preset(rage->group_state, rage->selected,
+                                                  !contains_setting(global));
+        }
+        tab.config_loaded();
+    }
+    void clipboard_action(Tab& tab, std::uint32_t action) {
+        auto descriptors = tab_descriptors(tab);
+        if (descriptors.empty())
+            return;
+        if (action == 0)
+            copy_tab_config(tab, descriptors);
+        else if (action == 1)
+            paste_tab_config(tab, descriptors);
     }
     RootMenuLayoutTargets targets() const {
         const auto legit_categories = legit->menu.categories();
@@ -2861,9 +3065,14 @@ RootMenu::RootMenu(MenuWindow& window, RootMenuBindings bindings)
     window.navigation.tabs = d.navigation;
     modules.bind_menu(window, bindings.configuration, bindings.identities, bindings.player_state,
                       bindings.input, d.players->menu);
+    auto& popup = d.tab_config_popup.emplace(d, bindings.identities);
+    popup.dpi_changed(window.input.scale, window.input.slider_metrics);
+    window.tab_context_menu = &popup;
 }
 RootMenu::~RootMenu() {
     auto& d = *data_;
+    if (d.tab_config_popup && d.window.tab_context_menu == &*d.tab_config_popup)
+        d.window.tab_context_menu = nullptr;
     if (d.bindings.input.main_menu == d.window_address &&
         d.window.navigation.tabs.data() == d.navigation.data())
         d.window.navigation.tabs = {};
@@ -2995,6 +3204,147 @@ void update_rage_hit_chance_visibility(Widget& hit_chance, void* engine_object,
 // ============================================================================
 
 namespace skeet::ui {
+namespace {
+struct ShellApartment {
+    HRESULT result = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    ~ShellApartment() {
+        if (SUCCEEDED(result))
+            CoUninitialize();
+    }
+};
+struct ReleaseShellInterface {
+    void operator()(IUnknown* object) const noexcept { object->Release(); }
+};
+bool show_script_file(const wchar_t* path) {
+    ShellApartment apartment;
+    if (FAILED(apartment.result))
+        return false;
+    PIDLIST_ABSOLUTE item = nullptr;
+    if (FAILED(SHParseDisplayName(path, nullptr, &item, 0, nullptr)))
+        return false;
+    const auto result = SHOpenFolderAndSelectItems(item, 0, nullptr, 0);
+    CoTaskMemFree(item);
+    return SUCCEEDED(result);
+}
+bool recycle_script_file(const wchar_t* path) {
+    const auto attributes = GetFileAttributesW(path);
+    if (attributes == INVALID_FILE_ATTRIBUTES || (attributes & FILE_ATTRIBUTE_DIRECTORY))
+        return false;
+    ShellApartment apartment;
+    if (FAILED(apartment.result))
+        return false;
+    IFileOperation* operation_pointer = nullptr;
+    if (FAILED(CoCreateInstance(__uuidof(FileOperation), nullptr, CLSCTX_INPROC_SERVER,
+                                IID_PPV_ARGS(&operation_pointer))))
+        return false;
+    const std::unique_ptr<IFileOperation, ReleaseShellInterface> operation(operation_pointer);
+    IShellItem* item_pointer = nullptr;
+    if (FAILED(SHCreateItemFromParsingName(path, nullptr, IID_PPV_ARGS(&item_pointer))))
+        return false;
+    const std::unique_ptr<IShellItem, ReleaseShellInterface> item(item_pointer);
+    constexpr DWORD flags = FOF_ALLOWUNDO | FOF_SILENT | FOF_NOERRORUI |
+                            FOFX_RECYCLEONDELETE | FOFX_EARLYFAILURE;
+    BOOL aborted = FALSE;
+    return SUCCEEDED(operation->SetOperationFlags(flags)) &&
+           SUCCEEDED(operation->DeleteItem(item.get(), nullptr)) &&
+           SUCCEEDED(operation->PerformOperations()) &&
+           SUCCEEDED(operation->GetAnyOperationsAborted(&aborted)) && !aborted &&
+           GetFileAttributesW(path) == INVALID_FILE_ATTRIBUTES &&
+           GetLastError() == ERROR_FILE_NOT_FOUND;
+}
+} // namespace
+
+class ScriptsMenu::ScriptList final : public Listbox {
+public:
+    ScriptList(Widget* owner, std::u16string_view label, Point size, std::int32_t* setting,
+               bool show_search, WidgetIdentities& identities, ScriptsMenu& menu)
+        : Listbox(owner, label, size, setting, show_search, identities), menu_(menu),
+          popup_(this, {u"Open directory", u"Delete"}, identities) {
+        popup_.selected = [](Widget& owner, PopupMenu&, std::uint32_t action) {
+            static_cast<ScriptList&>(owner).select_action(action);
+        };
+    }
+    int input_priority() const override { return popup_.open ? 1 : 0; }
+    bool mouse(const InputMessage& message, Point cursor) override {
+        if (popup_.open) {
+            if (popup_.mouse(message, cursor))
+                return true;
+            if (message.message == WM_LBUTTONDOWN || message.message == WM_RBUTTONUP)
+                popup_.reset_input();
+            else if (popup_.hit_test(cursor))
+                return true;
+        }
+        if (message.message != WM_RBUTTONUP || !hit_test(cursor))
+            return Listbox::mouse(message, cursor);
+
+        const auto& bounds = geometry.bounds;
+        const auto x = cursor.x - bounds.x;
+        const auto y = cursor.y - bounds.y - (search_visible ? row_height : 0);
+        if (scroll.enabled && x >= scroll.viewport.x - round_layout_coordinate(scale * 11.0f))
+            return false;
+        const auto row = option_at({x, y});
+        if (row < 0 || static_cast<std::size_t>(row) >= options.size())
+            return false;
+        const auto index = static_cast<std::uint32_t>(options[row].value) & 0x7fffffffu;
+        const auto records = menu_.manager_.records();
+        if (index >= records.size() || records[index].file_path.empty())
+            return false;
+        context_path_ = records[index].file_path;
+        popup_.geometry.bounds.x = x;
+        popup_.geometry.bounds.y = cursor.y - bounds.y;
+        popup_.open = true;
+        return true;
+    }
+    bool keyboard(const InputMessage& message) override {
+        if (popup_.open && message.message == WM_KEYDOWN && message.parameter == VK_ESCAPE) {
+            popup_.reset_input();
+            return true;
+        }
+        return Listbox::keyboard(message);
+    }
+    void reset_input() override {
+        Listbox::reset_input();
+        popup_.reset_input();
+    }
+    void dpi_changed(float factor, const SliderMetrics& metrics) override {
+        Listbox::dpi_changed(factor, metrics);
+        popup_.reset_input();
+        popup_.dpi_changed(factor, metrics);
+    }
+    void draw(RenderQueue& queue, Point origin, std::uint32_t accent) const override {
+        Listbox::draw(queue, origin, accent);
+        const auto& bounds = geometry.bounds;
+        popup_.draw(queue, {origin.x + bounds.x, origin.y + bounds.y}, accent);
+    }
+    void close_popup() { popup_.reset_input(); }
+
+private:
+    void select_action(std::uint32_t action) {
+        const auto file = context_path_;
+        popup_.reset_input();
+        const auto* path = reinterpret_cast<const wchar_t*>(file.c_str());
+        if (action == 0) {
+            if (!show_script_file(path))
+                MessageBoxW(nullptr, L"Could not open the script in File Explorer.", L"Lua", MB_OK);
+        } else if (action == 1) {
+            if (!recycle_script_file(path)) {
+                MessageBoxW(nullptr, L"Could not move the script to the Recycle Bin.", L"Lua", MB_OK);
+                return;
+            }
+            const auto records = menu_.manager_.records();
+            const auto found = std::find_if(records.begin(), records.end(), [&](const auto& record) {
+                return record.file_path == file;
+            });
+            if (found != records.end() && menu_.manager_.loaded(found->name))
+                menu_.manager_.unload(static_cast<std::size_t>(found - records.begin()));
+            menu_.refresh();
+            menu_.update_selection();
+        }
+    }
+    ScriptsMenu& menu_;
+    PopupMenu popup_;
+    std::u16string context_path_;
+};
 
 ScriptsMenu::ScriptsMenu(Tab& tab, WidgetIdentities& identities, ScriptsMenuValues values,
                          script::ScriptManager& manager)
@@ -3008,8 +3358,10 @@ ScriptsMenu::ScriptsMenu(Tab& tab, WidgetIdentities& identities, ScriptsMenuValu
     unsafe.callbacks.push_back({this, unsafe_changed});
     add<Button>(category_, 0, u"Reload active scripts", Point{158, 28},
                 WidgetCallback{this, reload_active}, identities);
-    list_ = &add<Listbox>(category_, 0, u"Scripts", Point{158, 126}, nullptr, true, identities);
+    list_ = &add<ScriptList>(category_, 0, u"Scripts", Point{158, 126}, nullptr, true, identities,
+                             *this);
     list_->callbacks.push_back({this, selection_changed});
+    list_->selection_callbacks.push_back({this, script_selected});
     list_->enabled = true;
     category_.scripts = list_;
     updated_ = &add<Label>(category_, 0, u" ", identities);
@@ -3028,7 +3380,15 @@ ScriptsMenu::~ScriptsMenu() {
     std::erase(tab_.categories, &category_);
 }
 
+void ScriptsMenu::bind_presets(ConfigPresetsMenu& presets) {
+    presets_ = &presets;
+    presets.list().selection_callbacks.push_back({this, preset_selected});
+    presets.selection_refreshed = {this, preset_refreshed};
+    update_startup_selection();
+}
+
 void ScriptsMenu::refresh() { // 0x4336D863
+    static_cast<ScriptList&>(*list_).close_popup();
     auto discovered =
         script::discover_scripts(manager_.builtins_, manager_.files_, manager_.settings_.get());
     startup_->value = nullptr;
@@ -3048,11 +3408,14 @@ void ScriptsMenu::refresh() { // 0x4336D863
         }
     }
     list_->set_options(&options);
+    update_startup_selection();
 }
 
 void ScriptsMenu::activate() {
-    if (!values_.enabled)
+    if (!values_.enabled) {
+        update_startup_selection();
         return;
+    }
     refresh();
     update_selection();
 }
@@ -3061,7 +3424,6 @@ void ScriptsMenu::update_selection() { // 0x433F1A21
     if (!values_.enabled)
         return;
     bool can_load = false, can_unload = false;
-    std::uint8_t* startup = nullptr;
     const auto records = manager_.records();
     const auto index = std::bit_cast<std::uint32_t>(list_->selected_item);
     if (!list_->filtered_indices.empty() && index < records.size()) {
@@ -3069,13 +3431,43 @@ void ScriptsMenu::update_selection() { // 0x433F1A21
         can_unload = manager_.ready() && manager_.loaded(record.name);
         can_load = !can_unload;
         updated_->name = script_update_age(record.modified_time, read_time(clock_context));
-        startup = &record.startup;
-        startup_->enabled = true;
     }
     load_->set_visible(can_load);
     unload_->set_visible(can_unload);
-    startup_->value = startup;
+    update_startup_selection();
+}
+
+void ScriptsMenu::update_startup_selection() {
+    startup_value_ = 0;
+    bool available = false;
+    if (preset_target_ && presets_) {
+        auto& presets = presets_->manager();
+        available = !presets_->list().filtered_indices.empty() &&
+                    presets.selected_index < presets.entries().size();
+        startup_value_ = available && presets.selected_for_startup();
+        startup_->name = u"Load config on startup";
+    } else {
+        const auto records = manager_.records();
+        const auto index = std::bit_cast<std::uint32_t>(list_->selected_item);
+        available = values_.enabled && !list_->filtered_indices.empty() && index < records.size();
+        if (available)
+            startup_value_ = records[index].startup;
+        startup_->name = u"Load on startup";
+    }
+    // The checkbox owns its displayed byte; discovery may replace script records.
+    startup_->value = available ? &startup_value_ : nullptr;
+    startup_->enabled = available;
     startup_->config_loaded();
+}
+
+void ScriptsMenu::preset_selected(void* context, Widget&) {
+    auto& self = *static_cast<ScriptsMenu*>(context);
+    self.preset_target_ = true;
+    self.update_startup_selection();
+}
+
+void ScriptsMenu::preset_refreshed(void* context, Widget&) {
+    static_cast<ScriptsMenu*>(context)->update_startup_selection();
 }
 
 void ScriptsMenu::enabled_changed(void* context, Widget& source) { // 0x43382337
@@ -3093,6 +3485,7 @@ void ScriptsMenu::enabled_changed(void* context, Widget& source) { // 0x43382337
     } else if (self.manager_.ready()) {
         self.manager_.shutdown();
     }
+    self.update_startup_selection();
 }
 
 void ScriptsMenu::unsafe_changed(void* context, Widget&) { // 0x43386459
@@ -3110,11 +3503,27 @@ void ScriptsMenu::reload_active(void* context, Widget&) { // 0x43359BC3
 void ScriptsMenu::selection_changed(void* context, Widget&) { // 0x433E1D52
     static_cast<ScriptsMenu*>(context)->update_selection();
 }
+void ScriptsMenu::script_selected(void* context, Widget&) {
+    auto& self = *static_cast<ScriptsMenu*>(context);
+    self.preset_target_ = false;
+    self.update_selection();
+}
 
 void ScriptsMenu::startup_changed(void* context, Widget& source) { // 0x433A125F
     auto& self = *static_cast<ScriptsMenu*>(context);
-    if (static_cast<Checkbox&>(source).value && !self.list_->filtered_indices.empty())
-        self.manager_.startup_changed();
+    if (!static_cast<Checkbox&>(source).value)
+        return;
+    if (self.preset_target_ && self.presets_) {
+        self.presets_->manager().set_selected_startup(self.startup_value_ != 0);
+    } else {
+        const auto records = self.manager_.records();
+        const auto index = std::bit_cast<std::uint32_t>(self.list_->selected_item);
+        if (self.values_.enabled && !self.list_->filtered_indices.empty() && index < records.size()) {
+            records[index].startup = self.startup_value_;
+            self.manager_.startup_changed();
+        }
+    }
+    self.update_startup_selection();
 }
 
 void ScriptsMenu::load(void* context, Widget&) { // 0x43349FD6
@@ -3466,6 +3875,10 @@ SkinsMenu::SkinsMenu(Tab& tab, ConfigRegistries& settings, WidgetIdentities& ide
 SkinsMenu::~SkinsMenu() {
     for (auto* category : categories())
         std::erase(tab_.categories, category);
+}
+void SkinsMenu::append_team_config(std::vector<ConfigDescriptor*>& descriptors) const {
+    for (const auto& setting : skins_required)
+        descriptors.push_back(&descriptor(settings_, setting.hash));
 }
 void SkinsMenu::refresh() {
     refresh_.invalidate_weapon_models();
@@ -3873,6 +4286,9 @@ std::array<bool, 10> restore_startup_settings_records(SettingsPersistenceState& 
     const auto stream = information.subspan(12, length);
     if (word(stream, 0) != config_stream_magic)
         throw std::invalid_argument("Startup settings stream has an invalid signature");
+    state.startup_preset_hash = 0;
+    if (const auto preset = find_config_record(stream, startup_preset_record))
+        state.startup_preset_hash = word(preset->value, 0);
     auto* const owner = const_cast<std::byte*>(state.native_owner());
     if (!owner)
         throw std::invalid_argument(

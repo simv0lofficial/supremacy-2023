@@ -49,6 +49,7 @@ public:
     void format(const char* format, ...); // complete 0x4339DC04
     void vformat(const char* format, std::va_list arguments);
     void console_format(const char* format, ...);
+    void console_status(bool success, const char* format, ...);
 };
 void bind_log_configuration(const HideFromObsConfig&, ErrorLog&, NormalLog&) noexcept;
 void bind_log_hud(ColoredLogRing* const& canonical_slot, ErrorLog&, NormalLog&) noexcept;

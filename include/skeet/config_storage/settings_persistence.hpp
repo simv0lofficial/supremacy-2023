@@ -8,6 +8,7 @@
 
 namespace skeet {
 class PreservedConfigStorage;
+inline constexpr ConfigRecordKey startup_preset_record{4, 3, 0xB8542862u};
 
 struct SettingsScriptState {
     std::u16string name;
@@ -18,12 +19,13 @@ struct SettingsPersistenceInputs {
     std::uint32_t menu_key = 0; // 43478DC8, including the native low bits
     std::uint8_t input_mode = 0; // 43467E4B
     std::int32_t dpi_scale = 0; // 43475A94
-    std::int32_t menu_x = 0, menu_y = 0;
+    std::int32_t menu_width = 0, menu_height = 0;
     // 433ACDC7 visits 15 controls, then the final two controls. Native slots
     // 16..18 in the resulting 21-word record retain their previous contents.
     std::array<std::int32_t, 17> menu_control_values{};
     std::vector<SettingsScriptState> scripts;
     std::uint8_t flag = 0; // 43475798
+    bool capture_scripts = true;
 };
 
 struct SettingsPersistenceValues {
@@ -31,7 +33,7 @@ struct SettingsPersistenceValues {
     HotkeyBinding menu_binding{};
     std::int32_t input_mode = 0;
     std::int32_t dpi_scale = 0;
-    std::int32_t menu_x = 0, menu_y = 0;
+    std::int32_t menu_width = 0, menu_height = 0;
     std::array<std::uint32_t, 128> script_hashes{};
     std::uint32_t optional_value = 0;
     std::array<std::int32_t, 21> menu_controls{};
@@ -63,6 +65,8 @@ class SettingsPersistenceState {
     std::byte* native_owner_ = nullptr;
 
 public:
+    // Source-only preference, deliberately outside the per-preset registry.
+    std::uint32_t startup_preset_hash = 0;
     SettingsPersistenceState();
     SettingsPersistenceState(std::byte* constructed_owner, std::size_t owner_size);
     SettingsPersistenceState(const SettingsPersistenceState&) = delete;
@@ -72,8 +76,8 @@ public:
     HotkeyBinding& menu_binding;
     std::int32_t& input_mode;
     std::int32_t& dpi_scale;
-    std::int32_t& menu_x;
-    std::int32_t& menu_y;
+    std::int32_t& menu_width;
+    std::int32_t& menu_height;
     std::array<std::uint32_t, 128>& script_hashes;
     std::uint32_t& optional_value;
     std::array<std::int32_t, 21>& menu_controls;

@@ -52,7 +52,7 @@ struct PendingWeaponHandle {
 };
 struct SequenceRuntime {
     void* inventory_resolver = nullptr; //4348DE49 captured4346A890, owner+5C
-    std::uint32_t knife_class = 0, viewmodel_class = 0;
+    std::uint32_t knife_class = 0, weapon_world_model_class = 0;
     std::int32_t original_model = -1, original_definition = 0;
     std::string_view inspection_sequence = "lookat01"; //4348DF7D..DFC6 ->owner+358
     std::array<KnifeSequenceModels, 19> models{};

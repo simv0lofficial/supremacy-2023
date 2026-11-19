@@ -4,6 +4,7 @@
 
 namespace skeet::ui {
 class MenuWindow;
+class PopupMenu;
 struct WindowMessage {
     std::uintptr_t window = 0;
     InputMessage input;
@@ -18,6 +19,10 @@ struct WindowMessageHandler {
     bool (*callback)(MenuWindow&, WindowMessage&);
     WindowMessageHandler* next = nullptr;
 };
+struct WindowResizeCallback {
+    void* context = nullptr;
+    void (*save)(void*) = nullptr;
+};
 std::uint32_t window_ticks(void* context);
 
 class MenuWindow {
@@ -30,6 +35,8 @@ public:
     Point position{};
     std::uintptr_t native_window = 0;
     Point cursor{}, drag_anchor{};
+    Point resize_start_size{};
+    WindowResizeCallback resize_finished{};
     WindowEventServices event_services{};
     WindowEventState* event_state = &window_event_state();
     MenuGeometry geometry;
@@ -37,6 +44,7 @@ public:
     // Widgets reach the same +0x38 word through their owning tab's menu input.
     std::uint32_t& button_flags = input.button_flags;
     std::vector<Tab*> tabs;
+    PopupMenu* tab_context_menu = nullptr;
     Menu navigation{};
     std::uint32_t transition_started = 0;
     std::int32_t transition_state = 0;
@@ -50,10 +58,24 @@ public:
     std::uint32_t (*read_ticks)(void*) = window_ticks;
 
     void update_dpi(float scale);
+    void resize(Point size);
+    void move(Point position) noexcept;
+    void restore_size(Point saved, Point viewport);
+    Point size_for_persistence() const noexcept;
+    bool update_viewport(Point viewport);
+    void refresh_viewport();
+    void finish_resize();
+    bool startup_placement_pending = false;
     bool dispatch(WindowMessage& message);
     void open();
     void update_transition(RenderQueue& queue);
     void draw(RenderQueue& queue, std::uint32_t accent);
+
+private:
+    Point preferred_size_{};
+    Point viewport_{};
+    bool centered_ = false;
+    void resize_layout(Point size);
 };
 
 struct DpiResourceCallback {

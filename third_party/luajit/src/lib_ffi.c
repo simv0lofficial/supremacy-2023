@@ -82,7 +82,8 @@ static void *ffi_checkptr(lua_State *L, int narg, CTypeID id)
   void *p;
   if (o >= L->top)
     lj_err_arg(L, narg, LJ_ERR_NOVAL);
-  lj_cconv_ct_tv(cts, ctype_get(cts, id), (uint8_t *)&p, o, CCF_ARG(narg));
+  lj_cconv_ct_tv(cts, ctype_get(cts, id), (uint8_t *)&p, o,
+                 CCF_ARG(narg) | CCF_SAFEWRITE);
   return p;
 }
 
@@ -95,7 +96,7 @@ static int32_t ffi_checkint(lua_State *L, int narg)
   if (o >= L->top)
     lj_err_arg(L, narg, LJ_ERR_NOVAL);
   lj_cconv_ct_tv(cts, ctype_get(cts, CTID_INT32), (uint8_t *)&i, o,
-		 CCF_ARG(narg));
+ 		 CCF_ARG(narg) | CCF_SAFEWRITE);
   return i;
 }
 
@@ -147,15 +148,17 @@ LJLIB_CF(ffi_meta___index)	LJLIB_REC(cdata_index 0)
 {
   CTState *cts = ctype_cts(L);
   CTInfo qual = 0;
+  GCcdata *cd;
   CType *ct;
   uint8_t *p;
   TValue *o = L->base;
   if (!(o+1 < L->top && tviscdata(o)))  /* Also checks for presence of key. */
     lj_err_argt(L, 1, LUA_TCDATA);
-  ct = lj_cdata_index(cts, cdataV(o), o+1, &p, &qual);
+  cd = cdataV(o);
+  ct = lj_cdata_index(cts, cd, o+1, &p, &qual);
   if ((qual & 1))
     return ffi_index_meta(L, cts, ct, MM_index);
-  if (lj_cdata_get(cts, ct, L->top-1, p))
+  if (lj_cdata_get(cts, cd, ct, L->top-1, p))
     lj_gc_check(L);
   return 1;
 }
@@ -164,18 +167,20 @@ LJLIB_CF(ffi_meta___newindex)	LJLIB_REC(cdata_index 1)
 {
   CTState *cts = ctype_cts(L);
   CTInfo qual = 0;
+  GCcdata *cd;
   CType *ct;
   uint8_t *p;
   TValue *o = L->base;
   if (!(o+2 < L->top && tviscdata(o)))  /* Also checks for key and value. */
     lj_err_argt(L, 1, LUA_TCDATA);
-  ct = lj_cdata_index(cts, cdataV(o), o+1, &p, &qual);
+  cd = cdataV(o);
+  ct = lj_cdata_index(cts, cd, o+1, &p, &qual);
   if ((qual & 1)) {
     if ((qual & CTF_CONST))
       lj_err_caller(L, LJ_ERR_FFI_WRCONST);
     return ffi_index_meta(L, cts, ct, MM_newindex);
   }
-  lj_cdata_set(cts, ct, p, o+2, qual);
+  lj_cdata_set(cts, cd, ct, p, o+2, qual);
   return 0;
 }
 
@@ -381,7 +386,7 @@ LJLIB_CF(ffi_clib___index)	LJLIB_REC(clib_index 1)
       CTypeID sid = ctype_cid(s->info);
       void *sp = *(void **)cdataptr(cd);
       CType *ct = ctype_raw(cts, sid);
-      if (lj_cconv_tv_ct(cts, ct, sid, L->top-1, sp))
+      if (lj_cconv_tv_ct(cts, ct, sid, L->top-1, sp, 0))
 	lj_gc_check(L);
       return 1;
     }
@@ -538,7 +543,7 @@ LJLIB_CF(ffi_cast)	LJLIB_REC(ffi_new)
     lj_err_arg(L, 1, LJ_ERR_FFI_INVTYPE);
   if (!(tviscdata(o) && cdataV(o)->ctypeid == id)) {
     GCcdata *cd = lj_cdata_new(cts, id, d->size);
-    lj_cconv_ct_tv(cts, d, cdataptr(cd), o, CCF_CAST);
+    lj_cconv_ct_tv(cts, d, cdataptr(cd), o, CCF_CAST | CCF_SAFEWRITE);
     setcdataV(L, o, cd);
     lj_gc_check(L);
   }
@@ -678,17 +683,16 @@ LJLIB_CF(ffi_errno)	LJLIB_REC(.)
 
 LJLIB_CF(ffi_string)	LJLIB_REC(.)
 {
-  CTState *cts = ctype_cts(L);
   TValue *o = lj_lib_checkany(L, 1);
   const char *p;
   size_t len;
   if (o+1 < L->top && !tvisnil(o+1)) {
     len = (size_t)ffi_checkint(L, 2);
-    lj_cconv_ct_tv(cts, ctype_get(cts, CTID_P_CVOID), (uint8_t *)&p, o,
-		   CCF_ARG(1));
+    p = (const char *)ffi_checkptr(L, 1, CTID_P_CVOID);
+    if (!cdata_checkptr(L, p, len, SKEET_FFI_READ)) { p = ""; len = 0; }
   } else {
-    lj_cconv_ct_tv(cts, ctype_get(cts, CTID_P_CCHAR), (uint8_t *)&p, o,
-		   CCF_ARG(1));
+    /* The bounded scan validates every region containing the string. */
+    p = (const char *)ffi_checkptr(L, 1, CTID_P_CCHAR);
     int checked_len = skeet_lua_ffi_strlen(p);
     if (checked_len < 0) {
       skeet_lua_ffi_unavailable(L, p, SKEET_FFI_READ);
@@ -698,7 +702,6 @@ LJLIB_CF(ffi_string)	LJLIB_REC(.)
       len = (size_t)checked_len;
     }
   }
-  if (!cdata_checkptr(L, p, len, SKEET_FFI_READ)) { p = ""; len = 0; }
   L->top = o+1;  /* Make sure this is the last item on the stack. */
   setstrV(L, o, lj_str_new(L, p, len));
   lj_gc_check(L);

@@ -16,10 +16,10 @@ struct LiveRecordAttachmentContext {
 // entity origin, collision bounds and cached duck/angle state.
 void refresh_record_attachments(client::PlayerStateCache&, void* player, LagRecord&,
                                 const EntityPreparationContext&,
-                                const LiveRecordAttachmentContext&);
+                                const LiveRecordAttachmentContext&, bool projected_pose = false);
 // Explicit adapter for an existing numeric context. Its model and update
 // fields are not accessed; all bone/model operations use the required runtime.
 void refresh_record_attachments(client::PlayerStateCache&, void* player, LagRecord&,
                                 const EntityPreparationContext&, const RecordAttachmentContext&,
-                                const animation::BoneRuntime&);
+                                const animation::BoneRuntime&, bool projected_pose = false);
 } // namespace skeet::lagcomp

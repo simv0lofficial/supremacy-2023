@@ -579,15 +579,7 @@ static void callback_conv_args(CTState *cts, lua_State *L)
   if (slot < cts->cb.sizeid && (id = cts->cb.cbid[slot]) != 0) {
     ct = ctype_get(cts, id);
     rid = ctype_cid(ct->info);  /* Return type. x86: +(spadj<<16). */
-    cTValue *callback = lj_tab_getint(cts->miscmap, (int32_t)slot);
-    if (callback && tvisfunc(callback))
-      fn = funcV(callback);
-    else
-      ct = NULL;
-  } else {
-    ct = NULL;
-  }
-  if (ct) {
+    fn = funcV(lj_tab_getint(cts->miscmap, (int32_t)slot));
     fntp = LJ_TFUNC;
   } else {  /* Must set up frame first, before throwing the error. */
     ct = NULL;
@@ -654,7 +646,7 @@ static void callback_conv_args(CTState *cts, lua_State *L)
 #endif
 	 )
 	sp = (void *)((uint8_t *)sp + CTSIZE_PTR-cta->size);
-      gcsteps += lj_cconv_tv_ct(cts, cta, 0, o++, sp);
+      gcsteps += lj_cconv_tv_ct(cts, cta, 0, o++, sp, 0);
     }
     fid = ctf->sib;
   }

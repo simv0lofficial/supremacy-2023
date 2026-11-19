@@ -3,6 +3,7 @@
 #include "skeet/esp/player_geometry.hpp"
 #include "skeet/lagcomp/history.hpp"
 #include "skeet/resolver_runtime/environment_update.hpp"
+#include "skeet/resolver_runtime/jitter.hpp"
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -100,6 +101,7 @@ struct PlayerState {
     // Reuse the existing portable ring, once per player. On x86 its pointers
     // publish directly into native_history_links; host-width links stay here.
     lagcomp::RecordRing history;
+    resolver_runtime::JitterTracking jitter;
     resolver_runtime::EnvironmentOwner environment() const noexcept;
     void environment(const resolver_runtime::EnvironmentOwner&) noexcept;
     lagcomp::PlayerCaptureState capture_state() const noexcept;

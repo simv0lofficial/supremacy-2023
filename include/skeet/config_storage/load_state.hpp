@@ -4,7 +4,7 @@
 namespace skeet {
 
 // Native 43475A98 is one shared byte. Category loading sets it to one for
-// all three value passes and clears it before invoking widget callbacks.
+// its value passes. Scoped tab loads also keep it set during widget refresh.
 inline bool& config_loading_flag() noexcept {
     static bool loading = false;
     return loading;

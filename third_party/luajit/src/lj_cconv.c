@@ -133,14 +133,18 @@ void lj_cconv_ct_ct(CTState *cts, CType *d, CType *s,
   if (ctype_type(dinfo) > CT_MAYCONVERT || ctype_type(sinfo) > CT_MAYCONVERT)
     goto err_conv;
 
-  if (!cdata_checkptr(cts->L, dp, dsize == CTSIZE_INVALID ? 1 : dsize,
+  if (!(flags & CCF_SAFEWRITE) &&
+      !cdata_checkptr(cts->L, dp, dsize == CTSIZE_INVALID ? 1 : dsize,
                       SKEET_FFI_WRITE)) return;
   /* Array/struct decay carries an address without reading its contents. */
-  if (!((ctype_isrefarray(sinfo) || ctype_isstruct(sinfo)) && ctype_isptr(dinfo)) &&
+  if (!(flags & CCF_SAFEREAD) &&
+      !((ctype_isrefarray(sinfo) || ctype_isstruct(sinfo)) && ctype_isptr(dinfo)) &&
       !cdata_checkptr(cts->L, sp, ssize == CTSIZE_INVALID ? 1 : ssize, SKEET_FFI_READ)) {
     if (dsize != CTSIZE_INVALID) memset(dp, 0, dsize);
     return;
   }
+  /* Recursive numeric conversions stay within the spans checked above. */
+  flags |= CCF_SAFEREAD | CCF_SAFEWRITE;
 
   /* Some basic sanity checks. */
   lj_assertCTS(!ctype_isnum(dinfo) || dsize > 0, "bad size for number type");
@@ -387,10 +391,11 @@ copyval:  /* Copy value. */
 
 /* Convert C type to TValue. Caveat: expects to get the raw CType! */
 int lj_cconv_tv_ct(CTState *cts, CType *s, CTypeID sid,
-		   TValue *o, uint8_t *sp)
+		   TValue *o, uint8_t *sp, CTInfo flags)
 {
   CTInfo sinfo = s->info;
-  if (!(ctype_isrefarray(sinfo) || ctype_isstruct(sinfo)) &&
+  if (!(flags & CCF_SAFEREAD) &&
+      !(ctype_isrefarray(sinfo) || ctype_isstruct(sinfo)) &&
       !cdata_checkptr(cts->L, sp, s->size, SKEET_FFI_READ)) {
     if (ctype_isnum(sinfo) && s->size <= 8 &&
         (!ctype_isinteger(sinfo) || s->size <= 4)) {
@@ -414,14 +419,14 @@ int lj_cconv_tv_ct(CTState *cts, CType *s, CTypeID sid,
       if (LJ_DUALNUM && ctype_isinteger(sinfo)) {
 	int32_t i;
 	lj_cconv_ct_ct(cts, ctype_get(cts, CTID_INT32), s,
-		       (uint8_t *)&i, sp, 0);
+		       (uint8_t *)&i, sp, CCF_SAFEREAD | CCF_SAFEWRITE);
 	if ((sinfo & CTF_UNSIGNED) && i < 0)
 	  setnumV(o, (lua_Number)(uint32_t)i);
 	else
 	  setintV(o, i);
       } else {
 	lj_cconv_ct_ct(cts, ctype_get(cts, CTID_DOUBLE), s,
-		       (uint8_t *)&o->n, sp, 0);
+		       (uint8_t *)&o->n, sp, CCF_SAFEREAD | CCF_SAFEWRITE);
 	/* Numbers are NOT canonicalized here! Beware of uninitialized data. */
 	lj_assertCTS(tvisnum(o), "non-canonical NaN passed");
       }
@@ -577,8 +582,14 @@ void lj_cconv_ct_tv(CTState *cts, CType *d,
   CType *s;
   void *tmpptr;
   uint8_t tmpbool, *sp = (uint8_t *)&tmpptr;
-  if (!cdata_checkptr(cts->L, dp, d->size == CTSIZE_INVALID ? 1 : d->size,
+  if (!(flags & CCF_SAFEWRITE) &&
+      !cdata_checkptr(cts->L, dp, d->size == CTSIZE_INVALID ? 1 : d->size,
                       SKEET_FFI_WRITE)) return;
+  if (d->size != CTSIZE_INVALID && d->size != 0) flags |= CCF_SAFEWRITE;
+  /* TValues, local scalars and the cdata payload itself are VM-owned.
+  ** A reference's pointee is external and must be checked independently.
+  */
+  flags |= CCF_SAFEREAD;
   if (LJ_LIKELY(tvisint(o))) {
     sp = (uint8_t *)&o->i;
     sid = CTID_INT32;
@@ -595,6 +606,7 @@ void lj_cconv_ct_tv(CTState *cts, CType *d,
       lj_assertCTS(s->size == CTSIZE_PTR, "ref is not pointer-sized");
       sp = *(void **)sp;
       sid = ctype_cid(s->info);
+      flags &= ~CCF_SAFEREAD;
     }
     s = ctype_raw(cts, sid);
     if (ctype_isfunc(s->info)) {
@@ -682,11 +694,11 @@ void lj_cconv_bf_tv(CTState *cts, CType *d, uint8_t *dp, TValue *o)
   if ((info & CTF_BOOL)) {
     uint8_t tmpbool;
     lj_assertCTS(ctype_bitbsz(info) == 1, "bad bool bitfield size");
-    lj_cconv_ct_tv(cts, ctype_get(cts, CTID_BOOL), &tmpbool, o, 0);
+    lj_cconv_ct_tv(cts, ctype_get(cts, CTID_BOOL), &tmpbool, o, CCF_SAFEWRITE);
     val = tmpbool;
   } else {
     CTypeID did = (info & CTF_UNSIGNED) ? CTID_UINT32 : CTID_INT32;
-    lj_cconv_ct_tv(cts, ctype_get(cts, did), (uint8_t *)&val, o, 0);
+    lj_cconv_ct_tv(cts, ctype_get(cts, did), (uint8_t *)&val, o, CCF_SAFEWRITE);
   }
   pos = ctype_bitpos(info);
   bsz = ctype_bitbsz(info);
@@ -720,7 +732,7 @@ static void cconv_array_init(CTState *cts, CType *d, CTSize sz, uint8_t *dp,
   if (len * (uint64_t)esize > sz)
     cconv_err_initov(cts, d);
   for (i = 0, ofs = 0; i < len; i++, ofs += esize)
-    lj_cconv_ct_tv(cts, dc, dp + ofs, o + i, 0);
+    lj_cconv_ct_tv(cts, dc, dp + ofs, o + i, CCF_SAFEWRITE);
   if (ofs == esize) {  /* Replicate a single element. */
     for (; ofs < sz; ofs += esize) memcpy(dp + ofs, dp, esize);
   } else {  /* Otherwise fill the remainder with zero. */
@@ -742,7 +754,7 @@ static void cconv_substruct_init(CTState *cts, CType *d, uint8_t *dp,
       if (i >= len) break;
       *ip = i + 1;
       if (ctype_isfield(df->info))
-	lj_cconv_ct_tv(cts, ctype_rawchild(cts, df), dp+df->size, o + i, 0);
+	lj_cconv_ct_tv(cts, ctype_rawchild(cts, df), dp+df->size, o + i, CCF_SAFEWRITE);
       else
 	lj_cconv_bf_tv(cts, df, dp+df->size, o + i);
       if ((d->info & CTF_UNION)) break;
@@ -787,7 +799,7 @@ void lj_cconv_ct_init(CTState *cts, CType *d, CTSize sz,
   if (len == 0)
     memset(dp, 0, sz);
   else if (len == 1 && !lj_cconv_multi_init(cts, d, o))
-    lj_cconv_ct_tv(cts, d, dp, o, 0);
+    lj_cconv_ct_tv(cts, d, dp, o, CCF_SAFEWRITE);
   else if (ctype_isarray(d->info))  /* Also handles valarray init with len>1. */
     cconv_array_init(cts, d, sz, dp, o, len);
   else if (ctype_isstruct(d->info))

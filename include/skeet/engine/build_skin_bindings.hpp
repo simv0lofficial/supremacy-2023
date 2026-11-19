@@ -14,14 +14,14 @@ struct BuildSkinBindings {
     NativeDataImage& data;
     RandomSeed seed_random;
     RandomInteger random_integer;
-    ClientClass* viewmodel_class;
+    ClientClass* weapon_world_model_class;
     ClientClass* knife_class;
 };
 
 // Supported client65272025. Locate unique code signatures and read their real
 // static data operands before publication. The returned function addresses are
 // in the actual loaded client/vstdlib images; no captured singleton is copied.
-// Acquires CEconWearable, CPredictedViewModel and CKnife through VClient018's
+// Acquires CEconWearable, CBaseWeaponWorldModel and CKnife through VClient018's
 // actual GetAllClasses boundary. ItemSystem43468B9C must already be produced
 // by initialize_build_client_factories; it is not called here.
 BuildSkinBindings initialize_build_skin_bindings(NativeDataImage&, NativeImageEnvironment);

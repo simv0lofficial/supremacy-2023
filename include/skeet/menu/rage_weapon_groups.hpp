@@ -18,4 +18,6 @@ struct RageWeaponGroupState {
 // A null setting selects group zero. An unchanged or out-of-range selection
 // does not save, load, or refresh widgets.
 void switch_rage_weapon_group(RageWeaponGroupState& state, const std::uint32_t* selected_group);
+void reload_rage_weapon_groups_from_preset(RageWeaponGroupState&, const std::uint32_t& selected,
+                                           bool initialize_global = true);
 }

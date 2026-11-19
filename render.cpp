@@ -179,8 +179,8 @@ bool RendererBackend::prepare(D3DPRIMITIVETYPE primitive, IDirect3DBaseTexture9*
     return true;
 }
 
-// 433CBADB. Unconnected quads are individual triangle strips, four vertices
-// apiece. Connected strips and fans are emitted with one DrawPrimitive call.
+// Raw unconnected strips retain their original four-vertex format. Rectangle,
+// texture and text commands write quads as triangle lists so they can batch.
 void RendererBackend::draw(std::uint32_t count, std::uint32_t first) {
     device_->SetStreamSource(0, buffer_, 0, sizeof(RenderVertex));
     if (primitive_ == D3DPT_TRIANGLESTRIP && !connected_) {
@@ -233,6 +233,21 @@ void RendererBackend::flush(bool reset_start) {
 void RendererBackend::vertex(float x, float y, std::uint32_t color, float u, float v) {
     mapped_[count_++] = {x, y, depth_, color, u, v};
 }
+bool RendererBackend::quad(IDirect3DBaseTexture9* texture, float left, float top,
+                           float right, float bottom, const std::array<std::uint32_t, 4>& colors,
+                           float u0, float v0, float u1, float v1) {
+    if (!prepare(D3DPT_TRIANGLELIST, texture, 6, false))
+        return false;
+    // Keep the original strip's diagonal, winding, colors and UVs. Adjacent
+    // quads with the same state now share one DrawPrimitive call.
+    vertex(left, top, colors[0], u0, v0);
+    vertex(right, top, colors[1], u1, v0);
+    vertex(left, bottom, colors[2], u0, v1);
+    vertex(left, bottom, colors[2], u0, v1);
+    vertex(right, top, colors[1], u1, v0);
+    vertex(right, bottom, colors[3], u1, v1);
+    return true;
+}
 bool RendererBackend::append_vertices(D3DPRIMITIVETYPE primitive, IDirect3DBaseTexture9* texture,
                                       std::span<const RenderVertex> vertices, bool connected) {
     if (!prepare(primitive, texture, static_cast<std::uint32_t>(vertices.size()), connected))
@@ -244,23 +259,15 @@ bool RendererBackend::append_vertices(D3DPRIMITIVETYPE primitive, IDirect3DBaseT
 }
 
 void RendererBackend::rectangle(RectangleCommand c) { // 433E2C3F -> 433E99C8
-    if (!prepare(D3DPT_TRIANGLESTRIP, nullptr, 4, false))
-        return;
     const auto color = native_color(c.color);
     const auto right = float(add(c.x, c.width)), bottom = float(add(c.y, c.height));
-    vertex(float(c.x), float(c.y), color);
-    vertex(right, float(c.y), color);
-    vertex(float(c.x), bottom, color);
-    vertex(right, bottom, color);
+    quad(nullptr, float(c.x), float(c.y), right, bottom, {color, color, color, color});
 }
 void RendererBackend::four_color_gradient(FourColorGradientCommand c) { // 433D0FEC
-    if (!prepare(D3DPT_TRIANGLESTRIP, nullptr, 4, false))
-        return;
     const auto right = float(add(c.x, c.width)), bottom = float(add(c.y, c.height));
-    vertex(float(c.x), float(c.y), native_color(c.colors[0]));
-    vertex(right, float(c.y), native_color(c.colors[1]));
-    vertex(float(c.x), bottom, native_color(c.colors[3]));
-    vertex(right, bottom, native_color(c.colors[2]));
+    quad(nullptr, float(c.x), float(c.y), right, bottom,
+         {native_color(c.colors[0]), native_color(c.colors[1]), native_color(c.colors[3]),
+          native_color(c.colors[2])});
 }
 void RendererBackend::vertical_gradient(GradientCommand c) { // 43384795
     four_color_gradient({c.x,
@@ -368,7 +375,7 @@ void RendererBackend::texture(TextureCommand c) { // 43368EBB -> 433CCC5C
     if (c.texture == UINT32_MAX || c.texture >= textures_.size())
         return;
     const auto& record = textures_[c.texture];
-    if (!record.texture || !prepare(D3DPT_TRIANGLESTRIP, record.texture, 4, false))
+    if (!record.texture)
         return;
     auto width = c.source_width, height = c.source_height;
     if (c.scale != 1.0f) {
@@ -387,10 +394,8 @@ void RendererBackend::texture(TextureCommand c) { // 43368EBB -> 433CCC5C
     }
     const auto color = native_color(c.color);
     const auto right = float(add(c.x, width)), bottom = float(add(c.y, height));
-    vertex(float(c.x), float(c.y), color, u0, 0);
-    vertex(right, float(c.y), color, u1, 0);
-    vertex(float(c.x), bottom, color, u0, v1);
-    vertex(right, bottom, color, u1, v1);
+    quad(record.texture, float(c.x), float(c.y), right, bottom, {color, color, color, color},
+         u0, 0, u1, v1);
 }
 
 void RendererBackend::consume(std::span<const std::byte> commands) { // 4338AD28..4338AD51
@@ -609,6 +614,14 @@ struct FontExclusiveGuard {
     }
     SRWLOCK* lock;
 };
+void link_font_fallbacks(FontSet& fonts) noexcept {
+    // See startup_font_recipes for the seven font slots.
+    for (auto& font : fonts)
+        font.next = nullptr;
+    fonts[0].next = fonts[1].next = fonts[4].next = &fonts[3];
+    fonts[3].next = fonts[5].next = &fonts[6];
+    fonts[2].next = &fonts[5];
+}
 std::int32_t font_height(std::int32_t height, float scale) {
     const auto value = float(height) * scale + 0.5f;
     if (!(value >= -2147483648.0f && value < 2147483648.0f))
@@ -638,6 +651,7 @@ void RendererContainer::configure_fonts(std::span<const FontDefinition, 7> defin
         default_fonts[i] = std::move(runtime);
         fonts.default_fonts[i].cache = &default_fonts[i]->cache();
     }
+    link_font_fallbacks(fonts.default_fonts);
     fonts_configured_ = true;
 }
 void RendererContainer::set_font_scale(float scale) noexcept {
@@ -650,10 +664,10 @@ void RendererContainer::refresh_fonts() { // 433C95EA..433C96CB
     const auto requested = requested_font_scale();
     if (fonts.scale == requested)
         return;
+    FontExclusiveGuard lock(font_lock_);
     if (requested != 1.0f) {
         if (!fonts_configured_)
             throw std::logic_error("Seven native font definitions are required");
-        FontExclusiveGuard lock(font_lock_);
         for (std::size_t i = 0; i < 7; ++i) {
             const auto& definition = font_definitions[i];
             auto runtime = std::make_unique<FontRuntime>(
@@ -669,6 +683,7 @@ void RendererContainer::refresh_fonts() { // 433C95EA..433C96CB
                     gpu.texture = nullptr;
                 }
         }
+        link_font_fallbacks(fonts.scaled_fonts);
     }
     fonts.scale = requested;
 }
@@ -1005,10 +1020,10 @@ Point text_extent(FontLink& root, std::u16string_view text) { // 4338AA26
 }
 }
 
-IDirect3DTexture9* RendererBackend::font_texture(FontLink& link) const noexcept {
+const RendererBackend::FontTexture* RendererBackend::font_texture(const FontLink& link) const noexcept {
     const auto at = std::find_if(font_textures_.begin(), font_textures_.end(),
                                  [&](const auto& record) { return record.link == &link; });
-    return at == font_textures_.end() ? nullptr : at->texture;
+    return at == font_textures_.end() || !at->texture ? nullptr : &*at;
 }
 void RendererBackend::upload_fonts() { // 433C96CF..433C973A / 4334A887
     if (!fonts)
@@ -1028,13 +1043,18 @@ void RendererBackend::upload_fonts() { // 433C96CF..433C973A / 4334A887
                 font_textures_.push_back({&root, nullptr});
                 at = font_textures_.end() - 1;
             }
-            const auto atlas = font->atlas();
+            const auto atlas_read = font->lock_atlas();
+            const auto atlas = atlas_read.view();
             IDirect3DTexture9* uploaded = nullptr;
             if (SUCCEEDED(upload_texture(atlas.width, atlas.height, std::as_bytes(atlas.pixels),
                                          &uploaded))) {
                 if (at->texture)
                     at->texture->Release();
                 at->texture = uploaded;
+                at->width = atlas.width;
+                at->height = atlas.height;
+            } else {
+                font->mark_dirty();
             }
         }
     };
@@ -1093,9 +1113,8 @@ void RendererBackend::text(std::int32_t x, std::int32_t y, std::uint32_t color, 
                 if (!font)
                     continue;
                 auto* texture = font_texture(*font);
-                if (!texture)
-                    continue;
-                if (!prepare(D3DPT_TRIANGLESTRIP, texture, 4, false))
+                if (!texture || glyph.right > float(texture->width) ||
+                    glyph.bottom > float(texture->height))
                     continue;
                 const auto draw_x = add_text(pen_x, glyph.advance_first);
                 const auto next = add_text(draw_x, glyph.advance_second);
@@ -1104,11 +1123,12 @@ void RendererBackend::text(std::int32_t x, std::int32_t y, std::uint32_t color, 
                 const auto left = float(draw_x), top = float(pen_y);
                 const auto right = (left + glyph.right) - glyph.left;
                 const auto bottom = (top + glyph.bottom) - glyph.top;
-                vertex(left, top, argb, glyph.u0, glyph.v0);
-                vertex(right, top, argb, glyph.u1, glyph.v0);
-                vertex(left, bottom, argb, glyph.u0, glyph.v1);
-                vertex(right, bottom, argb, glyph.u1, glyph.v1);
-                pen_x = next;
+                // The producer may have grown the CPU atlas after upload.
+                const auto width = float(texture->width), height = float(texture->height);
+                if (quad(texture->texture, left, top, right, bottom, {argb, argb, argb, argb},
+                         glyph.left / width, glyph.top / height, glyph.right / width,
+                         glyph.bottom / height))
+                    pen_x = next;
             }
         }
     };
@@ -1351,6 +1371,20 @@ struct GlyphRecord {
     float left, top, right, bottom;
     std::int32_t first, second;
 };
+struct SharedGlyphLock {
+    explicit SharedGlyphLock(SRWLOCK& lock) noexcept : lock_(lock) {
+        AcquireSRWLockShared(&lock_);
+    }
+    ~SharedGlyphLock() { ReleaseSRWLockShared(&lock_); }
+    SRWLOCK& lock_;
+};
+struct ExclusiveGlyphLock {
+    explicit ExclusiveGlyphLock(SRWLOCK& lock) noexcept : lock_(lock) {
+        AcquireSRWLockExclusive(&lock_);
+    }
+    ~ExclusiveGlyphLock() { ReleaseSRWLockExclusive(&lock_); }
+    SRWLOCK& lock_;
+};
 std::uint32_t luminance_pixel(std::uint32_t bgra) noexcept {
     if (!bgra)
         return 0;
@@ -1380,15 +1414,16 @@ struct FontRuntime::Impl {
     std::array<std::uint32_t, 2048> coverage{};
     std::unordered_map<char16_t, GlyphRecord> records;
     std::vector<std::uint32_t> pixels;
+    mutable SRWLOCK lock = SRWLOCK_INIT;
     std::atomic_bool dirty = false;
 
     ~Impl() {
+        if (dc)
+            DeleteDC(dc);
         if (bitmap)
             DeleteObject(bitmap);
         if (font)
             DeleteObject(font);
-        if (dc)
-            DeleteDC(dc);
     }
     bool covered(char16_t character) const noexcept {
         const auto c = static_cast<std::uint16_t>(character);
@@ -1405,8 +1440,9 @@ struct FontRuntime::Impl {
             y += line_height;
         }
         if (y + line_height >= atlas_height) {
-            atlas_height = atlas_height ? atlas_height * 2 : atlas_width;
-            pixels.resize(static_cast<std::size_t>(atlas_width) * atlas_height);
+            const auto height = atlas_height ? atlas_height * 2 : atlas_width;
+            pixels.resize(static_cast<std::size_t>(atlas_width) * height);
+            atlas_height = height;
         }
     }
     void outline(std::int32_t width) {
@@ -1455,17 +1491,24 @@ struct FontRuntime::Impl {
             if (!length || length == GDI_ERROR || !gm.gmBlackBoxY)
                 return failed(character);
             std::vector<std::uint8_t> gray(length);
-            if (GetGlyphOutlineW(dc, c, GGO_GRAY8_BITMAP, &gm, length, gray.data(), &matrix) ==
-                GDI_ERROR)
+            const auto written = GetGlyphOutlineW(dc, c, GGO_GRAY8_BITMAP, &gm, length,
+                                                  gray.data(), &matrix);
+            if (written == GDI_ERROR || written > length || !gm.gmBlackBoxY ||
+                !gm.gmBlackBoxX || gm.gmBlackBoxX >= static_cast<UINT>(atlas_width))
+                return failed(character);
+            const auto pitch = written / gm.gmBlackBoxY;
+            if (pitch < gm.gmBlackBoxX)
                 return failed(character);
             const auto width = static_cast<std::int32_t>(gm.gmBlackBoxX);
+            const auto rows = static_cast<std::int32_t>(
+                std::min(gm.gmBlackBoxY, static_cast<UINT>(line_height)));
+            const auto offset = std::clamp<std::int32_t>(text_ascent - gm.gmptGlyphOrigin.y,
+                                                         0, line_height - rows);
             reserve_glyph(width);
-            const auto pitch = length / gm.gmBlackBoxY;
-            const auto offset = text_ascent - gm.gmptGlyphOrigin.y;
-            for (UINT row = 0; row < gm.gmBlackBoxY; ++row)
+            for (std::int32_t row = 0; row < rows; ++row)
                 for (UINT column = 0; column < gm.gmBlackBoxX; ++column) {
                     const auto value = gray[static_cast<std::size_t>(row) * pitch + column];
-                    pixels[static_cast<std::size_t>(y + static_cast<std::int32_t>(row) + offset) *
+                    pixels[static_cast<std::size_t>(y + row + offset) *
                                atlas_width +
                            x + column] =
                         value ? 0x00ffffffu | (std::min(std::uint32_t(value) * 4, 255u) << 24) : 0;
@@ -1478,6 +1521,8 @@ struct FontRuntime::Impl {
             if (!abc.abcA && !abc.abcB && !abc.abcC)
                 return failed(character);
             const std::int32_t border = (flags >> 2) & 1;
+            if (abc.abcB >= static_cast<UINT>(atlas_width - border * 2))
+                return failed(character);
             const auto width = static_cast<std::int32_t>(abc.abcB) + border * 2;
             reserve_glyph(width);
             std::memset(dib, 0, static_cast<std::size_t>(dib_width) * dib_height * 4);
@@ -1492,8 +1537,9 @@ struct FontRuntime::Impl {
                 GdiFlush();
                 if (!success)
                     return failed(character);
+                const auto end_column = std::min(width - border, dib_width);
                 for (std::int32_t row = border; row < line_height - border; ++row)
-                    for (std::int32_t column = border; column < width - border; ++column)
+                    for (std::int32_t column = border; column < end_column; ++column)
                         pixels[static_cast<std::size_t>(y + row) * atlas_width + x + column] =
                             luminance_pixel(
                                 dib[static_cast<std::size_t>(row) * dib_width + column]);
@@ -1594,10 +1640,20 @@ bool FontRuntime::valid() const noexcept {
     return impl_->initialized;
 }
 bool FontRuntime::supports(char16_t c) const noexcept {
+    SharedGlyphLock lock(impl_->lock);
     return impl_->covered(c);
 }
 bool FontRuntime::prepare(char16_t c) {
-    return impl_->create_glyph(c);
+    auto& state = *impl_;
+    {
+        SharedGlyphLock lock(state.lock);
+        if (state.records.contains(c))
+            return true;
+        if (!state.covered(c))
+            return false;
+    }
+    ExclusiveGlyphLock lock(state.lock);
+    return state.create_glyph(c);
 }
 void FontRuntime::prepare(std::u16string_view text) {
     for (auto c : text)
@@ -1605,6 +1661,7 @@ void FontRuntime::prepare(std::u16string_view text) {
 }
 bool FontRuntime::glyph(char16_t c, GlyphImage& out) const noexcept { // 43386484
     const auto& state = *impl_;
+    SharedGlyphLock lock(state.lock);
     const auto found = state.records.find(c);
     if (found == state.records.end())
         return false;
@@ -1621,8 +1678,17 @@ bool FontRuntime::glyph(char16_t c, GlyphImage& out) const noexcept { // 4338648
            glyph.second};
     return true;
 }
-GlyphAtlas FontRuntime::atlas() const noexcept {
-    return {impl_->atlas_width, impl_->atlas_height, impl_->pixels};
+FontRuntime::AtlasRead::AtlasRead(const Impl& state) noexcept : state_(state) {
+    AcquireSRWLockShared(&state_.lock);
+}
+FontRuntime::AtlasRead::~AtlasRead() {
+    ReleaseSRWLockShared(&state_.lock);
+}
+GlyphAtlas FontRuntime::AtlasRead::view() const noexcept {
+    return {state_.atlas_width, state_.atlas_height, state_.pixels};
+}
+FontRuntime::AtlasRead FontRuntime::lock_atlas() const noexcept {
+    return AtlasRead(*impl_);
 }
 void FontRuntime::mark_dirty() noexcept {
     impl_->dirty.store(true, std::memory_order_seq_cst);

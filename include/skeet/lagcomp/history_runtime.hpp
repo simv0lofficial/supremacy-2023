@@ -99,7 +99,7 @@ private:
     void build_live_hypotheses(void* player, client::PlayerState&, float speed_fraction,
                                LagRecord&);
     void publish_record(client::PlayerState&, void* player, const CachedHistoryFrame&,
-                        bool recording_active, bool enemy, bool layers_changed,
+                        bool recording_active, bool enemy, bool forced_yaw, bool layers_changed,
                         std::uint32_t update_flags, float speed_fraction, HistoryJobQueue&);
 };
 // One process history owner supplies the same canonical globals to deferred

@@ -2,6 +2,7 @@
 #include "skeet/config_storage/named_storage.hpp"
 #include "skeet/config_storage/load_state.hpp"
 #include "skeet/config_storage/config_stream_view.hpp"
+#include "skeet/config_storage/settings_persistence.hpp"
 #include <memory>
 
 namespace skeet::ui {
@@ -46,7 +47,8 @@ std::u16string config_name_from_utf8(std::string_view name);
 class ConfigPresetsManager {
 public:
     ConfigPresetsManager(ConfigRegistries& registries, NamedConfigStore& store,
-                         std::span<const std::byte> baseline, ConfigPresetsServices& services);
+                         std::span<const std::byte> baseline, ConfigPresetsServices& services,
+                         SettingsStateBinding settings = {});
     ConfigPresetsManager(ConfigRegistries&, NamedConfigStore&, PreservedConfigStorage&,
                          ConfigPresetsServices&);
     ~ConfigPresetsManager();
@@ -76,6 +78,9 @@ public:
     void reset();
     bool import_from_clipboard();
     bool export_to_clipboard();
+    bool selected_for_startup() const;
+    bool set_selected_startup(bool enabled);
+    bool load_startup();
 
 private:
     friend class ui::ConfigPresetsMenu;
@@ -93,6 +98,7 @@ private:
     std::span<const std::byte> baseline_;
     PreservedConfigStorage* preserved_ = nullptr;
     ConfigPresetsServices& services_;
+    SettingsStateBinding settings_;
     ui::ConfigPresetsMenu* menu_ = nullptr;
     std::vector<ConfigPresetEntry> entries_;
     std::vector<std::unique_ptr<PresetBinding>> bindings_;

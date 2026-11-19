@@ -31,7 +31,7 @@ void* weapon_viewmodel_material(); //whole43417FC3, cache6
 
 struct ModelFakePoseBindings {
     anti_aim::CommandOwner* const& record; //live source43475940, one semantic AA owner
-    const std::int32_t* const& current_tick; //live43475B2C, dereferenced for each draw
+    const std::int32_t* const& current_tick; //live43475B2C, last outgoing command
     const float& blend; //43475890
     const RageVector& observed_angles; //43476414
     const RageVector& reference_angles; //4347A4F0
@@ -55,7 +55,6 @@ struct ModelRenderHookInputs {
     engine::NativeConVarReference game_type; //live43467A8C ConVar
     engine::NativeConVarReference teammates_are_enemies; //live4346A568 ConVar
     engine::NativeConVarReference shadow_history; //live43467A78 ConVar
-    void* const& fake_controller; //434685B8
     ModelFakePoseBindings fake_pose;
     const std::uint32_t& shot_entity_handle; //4346D674
     const ModelShotState& shot; //same live state consumed by WorldCallbacks

@@ -239,19 +239,25 @@ extern "C" int skeet_lua_ffi_access(const void* pointer, std::size_t length, int
 // The trace recorder also uses this bounded scan; strlen must not cross into
 // an inaccessible page before an FFI guard has a chance to run.
 extern "C" int skeet_lua_ffi_strlen(const char* text) {
+    constexpr std::uintptr_t legacy_begin = 0x43310000u, legacy_end = 0x4360c000u;
+    constexpr DWORD readable = PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY |
+                               PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE |
+                               PAGE_EXECUTE_WRITECOPY;
     std::size_t length = 0;
     for (;;) {
         const auto address = reinterpret_cast<std::uintptr_t>(text);
         MEMORY_BASIC_INFORMATION region{};
-        if (!skeet_lua_ffi_access(text, 1, 0) || !VirtualQuery(text, &region, sizeof(region)))
+        if ((address >= legacy_begin && address < legacy_end) ||
+            !VirtualQuery(text, &region, sizeof(region)) || region.State != MEM_COMMIT ||
+            (region.Protect & (PAGE_GUARD | PAGE_NOACCESS)) || !(region.Protect & readable))
             return -1;
-        const auto end = reinterpret_cast<std::uintptr_t>(region.BaseAddress) + region.RegionSize;
+        auto end = reinterpret_cast<std::uintptr_t>(region.BaseAddress) + region.RegionSize;
         if (end <= address)
             return -1;
+        // Query each region once and never scan into the former image range.
+        if (address < legacy_begin && end > legacy_begin)
+            end = legacy_begin;
         const auto available = end - address;
-        // Recheck the full span, including overlap with the former image.
-        if (!skeet_lua_ffi_access(text, available, 0))
-            return -1;
         const auto* terminator = static_cast<const char*>(std::memchr(text, 0, available));
         const auto count = terminator ? static_cast<std::size_t>(terminator - text) : available;
         if (count > static_cast<std::size_t>(INT_MAX) - length)

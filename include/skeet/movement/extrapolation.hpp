@@ -46,6 +46,6 @@ std::int32_t extrapolate_lag_record(void* player, client::PlayerState&, lagcomp:
 // their native sites. Frozen semantic snapshots above are not consumed.
 std::int32_t extrapolate_lag_record(void* player, client::PlayerState&, lagcomp::LagRecord&,
                                     std::int32_t ticks, const MovementExtrapolationBindings&,
-                                    const MovementExtrapolationLiveBindings&);
+                                    const MovementExtrapolationLiveBindings&, bool rebuild_pose = false);
 
 } // namespace skeet

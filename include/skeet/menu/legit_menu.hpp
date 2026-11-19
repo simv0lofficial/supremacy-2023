@@ -37,6 +37,7 @@ public:
     std::int32_t selected_weapon() const noexcept {
         return selected_weapon_;
     }
+    void append_weapon_keys(std::vector<ConfigDescriptor*>&) const;
 
 private:
     static void weapon_changed(void* context, Widget& source);

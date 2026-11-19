@@ -1,4 +1,5 @@
 #pragma once
+#include "experimental_switch.hpp"
 #include "skeet/rage/ballistics.hpp"
 #include "skeet/events/game_events.hpp"
 #include "skeet/lagcomp/timeline.hpp"
@@ -82,11 +83,7 @@ struct ShotFeedbackState {
     // Captured wrapper arguments. Lua dispatch itself runs immediately, before
     // the native flag/counter updates, through the bound scripts member.
     std::vector<ShotFeedbackNotice> notices;
-    struct ExtrapolationShot {
-        std::int32_t original_command, id, ticks, simulation_tick;
-        bool reported = false;
-    };
-    std::vector<ExtrapolationShot> extrapolation_shots;
+
 };
 // Production entity lookups return identity first. Each field is read only
 // when the recovered consumer reaches it; health's engine virtual must not be
@@ -162,7 +159,7 @@ struct ShotFeedbackRuntime {
     std::int32_t maximum_unlag_milliseconds = 0;
     // Native convar read at 43468EA4; a nonzero value suppresses ray tests.
     bool ray_tests_disabled = false;
-    const std::uint8_t* resolver_rework = nullptr;
+    rage::ExperimentalSwitch resolver_rework{};
 };
 
 float quantize_shot_coordinate(float) noexcept; // complete 433E104F

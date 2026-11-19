@@ -24,12 +24,13 @@ struct HistoryResolverScratch {
 };
 struct HistoryResolverFields {
     std::uint32_t recoil_pitch_66146802;
-    std::uint32_t absolute_velocity_4e66bb34;
+    std::uint32_t absolute_origin_4e66bb34;
     std::uint32_t animation_override_00a5bd68;
     std::uint32_t pose_parameters_1caaf0a8;
     std::uint32_t studio_wrapper;
     std::uint32_t hitbox_set_c2b6fb10;
     std::uint32_t local_time_9f8e7f71;
+    std::uint32_t absolute_velocity_7a2d60c1 = 0;
 };
 struct HistoryResolverUpdateBindings {
     const EntityStateRuntime& entity;

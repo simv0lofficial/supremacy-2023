@@ -31,6 +31,7 @@ struct EnvironmentUpdateInput {
     RageVector target_origin;
     // Native model hitboxes 0 and 3. Null represents an unavailable model/set.
     const std::array<EnvironmentCapsule, 2>* hitboxes;
+    bool strict = false;
 };
 struct EnvironmentLiveUpdateInput {
     void* target;
@@ -45,6 +46,7 @@ struct EnvironmentLiveUpdateInput {
     const std::int32_t* const& current_command;
     const RageVector& local_origin; //43475BD4, read only at probe entry
     std::ptrdiff_t target_origin_offset; //A9EE6062
+    bool strict = false;
 };
 
 // Shared native owner/history/time gates43348478..43348558, after the entry's

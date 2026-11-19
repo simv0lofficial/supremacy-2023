@@ -120,6 +120,7 @@ void initialize_menu_window(MenuWindow& window, WindowCallbackStorage& callbacks
 void destroy_menu_window(MenuWindow& window,
                          WindowCallbackStorage& callbacks) noexcept { // 0x4333F611
     callbacks.destroy(window);
+    window.tab_context_menu = nullptr;
     for (auto*& tab : window.tabs) {
         delete tab;
         tab = nullptr;

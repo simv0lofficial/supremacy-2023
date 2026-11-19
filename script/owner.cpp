@@ -7,10 +7,6 @@
 #include <stdexcept>
 #include <utility>
 
-#if defined(__i386__) && defined(__clang__)
-extern "C" int skeet_lua_has_native_unwinder(const void* limit);
-#endif
-
 #if defined(_M_IX86) || defined(__i386__)
 #define SKEET_SCRIPT_PRIMARY __thiscall
 #define SKEET_SCRIPT_EXCEPTION __stdcall
@@ -24,6 +20,48 @@ extern "C" int skeet_lua_has_native_unwinder(const void* limit);
 namespace skeet::script {
 namespace {
 MaterialMethodRegistry* process_materials = nullptr; //the process4347579C owner
+
+detail::ActiveFrame* script_recovery_frame() noexcept {
+    for (auto* frame = detail::RtlGetFrame(); frame; frame = frame->previous) {
+        auto hash = 0x811c9dc5u;
+        for (unsigned shift = 0; shift != 32; shift += 8)
+            hash = (hash ^ ((frame->flags >> shift) & 255u)) * 0x01000193u;
+        if ((hash ^ 0x92ca5df1u) == 0xe18c2fa4u)
+            return frame;
+    }
+    return nullptr;
+}
+
+bool is_recoverable_access_violation(unsigned code, unsigned flags) noexcept {
+    return code == EXCEPTION_ACCESS_VIOLATION && flags == 0;
+}
+
+#if defined(__i386__) && defined(__clang__)
+extern "C" std::uintptr_t skeet_lua_seh_handler_address();
+extern "C" int skeet_lua_can_unwind_seh_frame(const void* registration);
+
+bool has_lua_unwind_frame(const detail::CallbackFrame& callback) noexcept {
+    // The LuaJIT x86 VM registers an SEH frame while executing a protected
+    // call. Search only the part of this thread's chain inside our checkpoint.
+    const auto& tib = *reinterpret_cast<const NT_TIB*>(NtCurrentTeb());
+    const auto limit = reinterpret_cast<std::uintptr_t>(tib.StackLimit);
+    const auto end = reinterpret_cast<std::uintptr_t>(tib.StackBase);
+    const auto target = skeet_lua_seh_handler_address();
+    for (auto address = reinterpret_cast<std::uintptr_t>(tib.ExceptionList);
+         address != callback.checkpoint.seh && address >= limit &&
+         address <= end - 2 * sizeof(std::uintptr_t) && address % alignof(std::uintptr_t) == 0;) {
+        const auto* record = reinterpret_cast<const detail::X86Registration*>(address);
+        if (reinterpret_cast<std::uintptr_t>(record->handler) == target &&
+            skeet_lua_can_unwind_seh_frame(record))
+            return true;
+        const auto previous = reinterpret_cast<std::uintptr_t>(record->previous);
+        if (previous <= address)
+            break;
+        address = previous;
+    }
+    return false;
+}
+#endif
 
 void release_process_materials() { //4334ED1D
     process_materials->destroy_process();
@@ -80,6 +118,10 @@ resume_exception_checkpoint(const detail::X86Checkpoint*, std::uint32_t) {
     std::longjmp(frame->checkpoint, static_cast<int>(code));
 }
 #endif
+}
+
+extern "C" int skeet_lua_can_unwind_native_fault(unsigned code, unsigned flags) {
+    return is_recoverable_access_violation(code, flags) && script_recovery_frame();
 }
 
 ScriptOwnerSystem native_script_owner_system() {
@@ -262,23 +304,19 @@ void SKEET_SCRIPT_PRIMARY ScriptOwner::level_entry(void* receiver) {
 
 long SKEET_SCRIPT_EXCEPTION
 ScriptOwner::exception_handler(::_EXCEPTION_POINTERS* exception) { //433592DE
-    // The source-linked LuaJIT uses Windows SEH for ordinary Lua errors.
-    // Its protected calls must receive these before the outer native recovery
-    // frame; intercepting them here skips pcall/xpcall and their error values.
+    // LuaJIT's own exception codes belong to the VM's protected frames.
+    // The linked VM unwinds ordinary Lua errors internally.
     if ((exception->ExceptionRecord->ExceptionCode & 0xffffff00u) == 0xe24c4a00u)
         return EXCEPTION_CONTINUE_SEARCH;
-    for (auto* frame = detail::RtlGetFrame(); frame; frame = frame->previous) {
-        auto hash = 0x811c9dc5u;
-        for (unsigned shift = 0; shift != 32; shift += 8)
-            hash = (hash ^ ((frame->flags >> shift) & 255u)) * 0x01000193u;
-        if ((hash ^ 0x92ca5df1u) != 0xe18c2fa4u)
-            continue;
+    if (auto* frame = script_recovery_frame()) {
         auto* callback = reinterpret_cast<detail::CallbackFrame*>(
             reinterpret_cast<std::byte*>(frame) - offsetof(detail::CallbackFrame, active));
 #if defined(__i386__) && defined(__clang__)
-        const auto code = exception->ExceptionRecord->ExceptionCode;
-        if ((code == EXCEPTION_ACCESS_VIOLATION || code == EXCEPTION_IN_PAGE_ERROR) &&
-            skeet_lua_has_native_unwinder(&callback->active))
+        // Let LuaJIT unwind its own frames when a native call faults inside
+        // pcall. Jumping straight to the host leaves Lua's base/cframe stale.
+        if (is_recoverable_access_violation(exception->ExceptionRecord->ExceptionCode,
+                                           exception->ExceptionRecord->ExceptionFlags) &&
+            has_lua_unwind_frame(*callback))
             return EXCEPTION_CONTINUE_SEARCH;
 #endif
         callback->exception_code = exception->ExceptionRecord->ExceptionCode;

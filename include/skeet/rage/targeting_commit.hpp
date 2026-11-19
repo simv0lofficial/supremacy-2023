@@ -17,6 +17,9 @@ struct SettingsMenuValues;
 
 namespace skeet::rage {
 struct FinalTargetContextBindings;
+struct BulletDamageModel;
+struct ExperimentalDamageContext;
+struct CompleteSpread;
 namespace final_target_detail {
 struct Producer;
 }
@@ -41,6 +44,7 @@ FinalHitchancePlan
 plan_final_hitchance(bool safe, float minimum_chance, std::uint32_t context_flags,
                      std::uint32_t entity_index,
                      const std::array<std::uint32_t, 2>& previous_targets) noexcept;
+FinalHitchancePlan plan_experimental_hitchance(float minimum_chance) noexcept;
 struct FinalHitchanceVotes {
     std::atomic<std::uint32_t> packed{0};
     std::atomic<std::uint32_t> stopped{0};
@@ -67,13 +71,19 @@ struct FinalHitchanceSample {
     // The full command owner supplies concrete engine bindings. A worker then
     // constructs its own native filter; the prebound API supplies filter views.
     const FinalTargetContextBindings* live_bindings = nullptr;
+    bool robust_safe = false;
+    const BulletDamageModel* damage_model = nullptr;
+    std::span<const RageScanHitbox> primary{};
+    const CompleteSpread* complete_spread = nullptr;
+    const BallisticQuery* captured_bullet = nullptr;
+    BallisticEntityInfo legacy_target{};
 };
 // Complete433DF8A0 sample worker. Every evaluated sample constructs its weapon
 // query through the genuine virtual getters, then runs concrete ballistics.
 // Safe samples contribute zero to three votes; regular samples zero or one.
 void evaluate_final_hitchance_sample(BallisticEngine&, const FinalHitchanceSample&,
                                      RageSpreadSample, std::int32_t failure_budget,
-                                     FinalHitchanceVotes&);
+                                     FinalHitchanceVotes&, unsigned seed_ordinal = 0);
 // 4341C7ED..4341C852: validates the shared counters and publishes the fraction.
 // The boundary budget comparison is >=, while worker cancellation uses >.
 RageHitchance final_hitchance_fraction(const FinalHitchanceVotes&,
@@ -136,6 +146,9 @@ struct FinalHitchanceContext {
     const ui::SettingsMenuValues& settings_menu;
     // Runtime-owned dispatcher; it must outlive every submitted task.
     engine::JobDispatcher* jobs;
+    bool full_seed_hitchance = false;
+    const ExperimentalDamageContext* damage_context = nullptr;
+    const CompleteSpread* complete_spread = nullptr;
 };
 // 4341B4C2 consumer after the actual entity/studio-model engine reads have
 // populated the typed inputs. Covers teammate rays, hitbox construction, record

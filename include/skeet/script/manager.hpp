@@ -20,6 +20,7 @@ struct ScriptRecord {
     std::uint64_t modified_time = 0;
     std::uint8_t startup = 0;
     std::u16string name;
+    std::u16string file_path{};
 };
 struct ScriptDirectoryEntry {
     std::u16string filename;

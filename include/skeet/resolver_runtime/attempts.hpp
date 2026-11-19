@@ -1,6 +1,7 @@
 #pragma once
 #include "skeet/resolver.hpp"
 #include <array>
+#include <cstddef>
 #include <cstdint>
 
 namespace skeet::lagcomp {
@@ -35,6 +36,10 @@ void advance_pending_attempt(ResolverRecord& record, std::uint32_t options) noex
 // Direct adapter for the complete captured record layout, without projecting or
 // copying the animation layers and unrelated capture fields.
 void select_variant(lagcomp::LagRecord& record, std::uint8_t attempt) noexcept;
+constexpr std::size_t yaw_variant_index(std::uint8_t attempt) noexcept {
+    return (attempt % 3u + 1u) % 3u;
+}
+void select_yaw_variant(lagcomp::LagRecord& record, std::uint8_t attempt) noexcept;
 void advance_pending_attempt(lagcomp::LagRecord& record, std::uint32_t options) noexcept;
 
 // Shared transition at 0x43349D92..0x43349E21 and

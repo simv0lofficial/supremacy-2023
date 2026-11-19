@@ -6,6 +6,7 @@
 #include "skeet/engine/hooks.hpp"
 #include "skeet/network/data_update_observers.hpp"
 #include "skeet/network/update_observers.hpp"
+#include "skeet/rage/experimental_switch.hpp"
 #include <array>
 
 namespace skeet::effects {
@@ -96,6 +97,7 @@ struct FixAnimationsBindings {
     engine::JobMemory memory;
     AnimationLayerProxy& original_layer_proxy; //saved engine proxy43476974
     const effects::PlayerOpacityBindings& opacity;
+    rage::ExperimentalSwitch history_rebuild{};
 };
 
 enum class FixAnimationHook {

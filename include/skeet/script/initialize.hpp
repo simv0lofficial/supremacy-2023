@@ -69,7 +69,7 @@ public:
     CompatModule* compat_module = nullptr;
     ExtensionRegistry* extensions = nullptr;
     std::span<BuiltinModule> builtins;
-    std::span<RequiredModule> required_modules; // 434792D0..D4, supremacy/ and gamesense/ loader
+    std::span<RequiredModule> required_modules; // 434792D0..D4, gamesense/ loader
     bool& enabled; // 434688BD, canonical startup availability; distinct from menu script settings
     int mode = 0x100; // requested43475A80
     int applied_mode = 0x100; // 43468580

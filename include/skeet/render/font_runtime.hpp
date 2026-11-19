@@ -19,7 +19,21 @@ struct GlyphAtlas {
 // GDI font, Unicode coverage, glyph records and the growing ARGB atlas.
 // Flags: 1 bold, 2 ClearType/ABC widths, 4 one-pixel outline.
 class FontRuntime {
+    struct Impl;
 public:
+    class AtlasRead {
+    public:
+        ~AtlasRead();
+        AtlasRead(const AtlasRead&) = delete;
+        AtlasRead& operator=(const AtlasRead&) = delete;
+        GlyphAtlas view() const noexcept;
+
+    private:
+        friend class FontRuntime;
+        explicit AtlasRead(const Impl&) noexcept;
+        const Impl& state_;
+    };
+
     FontRuntime(std::u16string_view face, std::int32_t height, std::uint32_t flags);
     ~FontRuntime();
     FontRuntime(const FontRuntime&) = delete;
@@ -29,7 +43,7 @@ public:
     bool prepare(char16_t character);
     void prepare(std::u16string_view text);
     bool glyph(char16_t character, GlyphImage& out) const noexcept;
-    GlyphAtlas atlas() const noexcept;
+    AtlasRead lock_atlas() const noexcept;
     void mark_dirty() noexcept;
     bool consume_dirty() noexcept;
     GlyphCache& cache() noexcept;
@@ -39,7 +53,6 @@ public:
     std::int32_t external_leading() const noexcept;
 
 private:
-    struct Impl;
     std::unique_ptr<Impl> impl_;
     GlyphCache cache_{};
 };

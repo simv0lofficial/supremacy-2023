@@ -4551,6 +4551,9 @@ void feature_indicators(void* context) { //434909F8, descriptor43468B84
 void anti_aim_correction(void* context) { //43490A1A, descriptor4346753C
     auto& source = bindings(context);
     append(source, source.rage.anti_aim_correction);
+    append(source, source.rage.experimental_rage);
+    for (const auto option : rage::active_experimental_rage_options)
+        append(source, source.rage.experimental_options[std::size_t(option)]);
 }
 void visual_recoil(void* context) { //43490A34, descriptor4346744C
     auto& source = bindings(context);
@@ -7893,27 +7896,26 @@ void FinalMenuStartupTail::initialize() {
     if (restored.records[9])
         storage_.menu_startup_data().script_values().allow_unsafe = persistent.flag;
     refresh_menu_key(window_.window(), storage_.menu_hotkey());
-    auto& window = window_.window();
-    if (restored.records[4] && persistent.menu_x >= window.default_size.x)
-        window.geometry.size.x = persistent.menu_x;
-    if (restored.records[5] && persistent.menu_y >= window.default_size.y)
-        window.geometry.size.y = persistent.menu_y;
     // The window's first DPI pass precedes tab construction. Initialize the
     // completed control tree even when the saved scale is still 100%.
     window_.menu_data().dpi.refresh(true);
+    auto& window = window_.window();
+    if (restored.records[4] && restored.records[5])
+        window.restore_size({persistent.menu_width, persistent.menu_height}, {});
     // Registry persistence overrides hardcoded layout defaults; bypass restoring saved grid layout.
     // if (restored.records[8])
     //     restore_saved_layout(menu, persistent.menu_controls);
     settings_.runtime().previous_dpi_scale = values.dpi_scale;
     settings_.runtime().previous_lock_layout = values.lock_layout;
     capture_startup_configuration_baseline(storage_);
-    const auto& screen = renderer_.renderer().backend();
-    // Center each launch in the actual game viewport. A captured X coordinate
-    // or a persisted desktop position from another resolution is not a valid
-    // placement for the current render target.
-    window.position = {(screen.screen_width - window.geometry.size.x) / 2,
-                       (screen.screen_height - window.geometry.size.y) / 2};
+    // Startup can run while the game is minimized or changing video mode.
+    // Place the menu on the HUD thread once its actual client area is known.
+    window.startup_placement_pending = true;
     menu.initialize_renderer_resources(renderer_.renderer());
+    window.resize_finished = {&configuration_.persistence(), [](void* context) {
+                                  static_cast<SettingsPersistence*>(context)->persist();
+                              }};
+    configuration_.presets().load_startup();
     complete_ = true;
 }
 } //namespace skeet::client
@@ -8731,7 +8733,10 @@ struct HistoryRuntimeOwner::Data {
                         &config.rage_settings().global.anti_aim_correction.value,
                         0,
                         entity.engine,
-                        nullptr},
+                        config.rage_settings().global.experimental(rage::ExperimentalRageOption::animation),
+                        {&config.rage_settings().global.jitter_fix.value,
+                         &config.rage_settings().global.experimental_rage.value},
+                        config.rage_settings().global.experimental(rage::ExperimentalRageOption::resolver)},
           jobs(imports.thread_pool, storage.memory()), environment{&storage,
                                                                    trace,
                                                                    point_contents,
@@ -8739,7 +8744,7 @@ struct HistoryRuntimeOwner::Data {
                                                                    scene.queries().ballistics(),
                                                                    bones.trigonometry(),
                                                                    entity.transform_override,
-                                                                   nullptr},
+                                                                   config.rage_settings().global.experimental(rage::ExperimentalRageOption::resolver)},
           history_environment{environment, entity.offsets.origin, numeric.environment_atan2},
           animation(lagcomp::native_history_animation_engine(
               storage.data().native_cell<void*>(0x434693F0u))),
@@ -8855,7 +8860,7 @@ struct HistoryRuntimeOwner::Data {
     static lagcomp::HistoryResolverFields resolver_fields(const engine::NativeOffsetGlobals& g) {
         return {offset(g, 0x43468354u), offset(g, 0x434670E0u), offset(g, 0x434679CCu),
                 offset(g, 0x43467D78u), offset(g, 0x43467E8Cu), offset(g, 0x43468240u),
-                offset(g, 0x43468D6Cu)};
+                offset(g, 0x43468D6Cu), offset(g, 0x434670A0u)};
     }
     static lagcomp::HistoryAnimationPublishFields
     publication_fields(const engine::NativeOffsetGlobals& g) {
@@ -9784,6 +9789,7 @@ void require_bindings(NativeStartupSources& sources, const MiscRuntimeFactoryBin
         throw std::invalid_argument(
             "Misc factories must share the live command flags and input words");
     const auto& g = b.grenades.engine;
+    const auto& grenade_visuals = b.grenades.visuals;
     if (&g.active != &image.native_cell<void*>(0x43475AACu) ||
         &g.input != &image.native_cell<void*>(0x4346A894u) ||
         &g.live.engine_client != &image.native_cell<void*>(0x4346A514u) ||
@@ -9794,8 +9800,8 @@ void require_bindings(NativeStartupSources& sources, const MiscRuntimeFactoryBin
         &g.release_choke_enabled != &image.native_cell<std::uint8_t>(0x43467560u) ||
         &g.observer_suppressed != &image.native_cell<std::uint8_t>(0x434684E0u) ||
         &g.ribbons_suppressed != &image.native_cell<std::uint8_t>(0x43468E58u) ||
-        &g.ribbons_color != &image.native_cell<std::uint32_t>(0x43468F60u) ||
-        &g.live.grenade_entities_enabled != &image.native_cell<std::uint8_t>(0x43467CD4u) ||
+        &g.ribbons_color != &grenade_visuals.entity_color.value ||
+        &g.live.grenade_entities_enabled != &grenade_visuals.entities.value ||
         &g.live.queries.grenades().bindings().entity_list != &image.native_cell<void*>(0x4346A890u))
         throw std::invalid_argument(
             "Misc grenade factory requires its canonical owner and live engine cells");
@@ -10086,7 +10092,7 @@ struct MiscRuntimeOwner::Data {
                  pointed<float>(source.data(), 0x43467EB8u),
                  pointed<float>(source.data(), 0x4346A338u),
                  reinterpret_cast<float*>(source.data().native_cell<void*>(0x43467B04u))[9],
-                 source.data().native_cell<std::uint8_t>(0x43467CD4u),
+                 settings.other_esp_settings().grenades.entities.value,
                  shared.projection,
                  shared.renderer,
                  shared.explosive_texture,
@@ -10109,7 +10115,7 @@ struct MiscRuntimeOwner::Data {
                 shared.movement_feedback,
                 shared.ribbons,
                 source.data().native_cell<std::uint8_t>(0x43468E58u),
-                source.data().native_cell<std::uint32_t>(0x43468F60u),
+                settings.other_esp_settings().grenades.entity_color.value,
                 source.data().native_cell<void*>(0x43475AACu)}},
               {settings.miscellaneous().no_fall_damage,
                {{offset(source, 0x43468BD4u), offset(source, 0x434688D0u),
@@ -12807,9 +12813,9 @@ std::uint32_t coordinate(float value) noexcept {
 
 // Five chained 16-bit pairs start at packet+2. The fifth pair's right word
 // aliases the saved player index at packet+20 in the native stack frame.
-// Its encrypted value is subsequently committed as owner.last_player.
-std::int32_t mix_packet(std::array<std::byte, 20>& packet, std::int32_t selected,
-                        std::uint32_t key) noexcept {
+// Only the 20 wire bytes are published; the scan cursor remains an entity index.
+void mix_packet(std::array<std::byte, 20>& packet, std::int32_t selected,
+                std::uint32_t key) noexcept {
     std::array<std::uint16_t, 11> words{};
     std::memcpy(words.data(), packet.data(), packet.size());
     words[10] = static_cast<std::uint16_t>(selected);
@@ -12833,7 +12839,6 @@ std::int32_t mix_packet(std::array<std::byte, 20>& packet, std::int32_t selected
         previous_right = right;
     }
     std::memcpy(packet.data(), words.data(), packet.size());
-    return signed_bits((std::uint32_t(selected) & 0xffff0000u) | words[10]);
 }
 
 RageVector shared_origin(PlayerState& state, const void* player,
@@ -12892,7 +12897,7 @@ void publish(RejectedPlayerUpdateOwner& owner, void* selected, std::int32_t inde
     }
     std::array<std::byte, 20> packet{};
     std::memcpy(packet.data(), words.data(), packet.size());
-    const auto stored_index = mix_packet(packet, index, owner.mixing_key);
+    mix_packet(packet, index, owner.mixing_key);
     transform_shared_esp_packet(context.packet_cipher, owner, packet);
     std::memcpy(words.data(), packet.data(), packet.size());
     auto* channel = engine::invoke<void*>(owner.engine_client, 78);
@@ -12911,7 +12916,7 @@ void publish(RejectedPlayerUpdateOwner& owner, void* selected, std::int32_t inde
         owner.destroy_message(message);
     }
     leave_shared_esp_update(context);
-    owner.last_player = stored_index;
+    owner.last_player = index;
     owner.last_update = context.current_time;
 }
 } // namespace
@@ -12972,8 +12977,8 @@ void update_rejected_player(void* player, const RejectedPlayerUpdateContext& con
         field<std::uint8_t>(*context.game_rules, context.offsets.rule_d720aea6))
         return;
     auto index = signed_bits(std::uint32_t(owner->last_player) + 1u);
-    for (std::int32_t iteration = 1; iteration < context.maximum_clients; ++iteration) {
-        if (index >= context.maximum_clients)
+    for (std::int32_t iteration = 1; iteration <= context.maximum_clients; ++iteration) {
+        if (index > context.maximum_clients)
             index = 1;
         auto* candidate = engine::invoke<void*>(context.entity_list, 3, index);
         if (candidate && engine::invoke<bool>(candidate, 158) &&
@@ -12981,7 +12986,7 @@ void update_rejected_player(void* player, const RejectedPlayerUpdateContext& con
             !engine::invoke<bool>(static_cast<std::byte*>(candidate) + 8, 9) &&
             !field<std::uint8_t>(candidate, context.offsets.rejected_9d920e35) &&
             engine::invoke<std::int32_t>(candidate, 122) > 0 &&
-            !context.players.records[std::size_t(iteration)].adjustments.whitelist &&
+            !context.players.records[std::size_t(index)].adjustments.whitelist &&
             (context.settings.other_team.value ||
              rage::target_is_enemy(context.targeting.capture(player), candidate))) {
             publish(*owner, candidate, index, context);
@@ -16416,6 +16421,8 @@ void PostInitializationRuntime::initialize() { // 4341F57F..4341F7CD
 
     bindings_.menu.scripts_menu().initialize_startup(imports_.get_command_line_a(),
                                                      bindings_.startup_scripts);
+    // Lua controls must exist before the preset restores their saved values.
+    bindings_.menu.preset_manager().load_startup();
     if (engine::invoke<bool>(hooks.engine, 26)) {
         reset_startup_acknowledgements(bindings_.acknowledgements);
         reset_command_state(bindings_.command_reset);
@@ -16831,13 +16838,19 @@ void StaticCrtInitialization::finalize_pointer_storage(std::uint32_t native_fina
     for (const auto& entry : pointers) {
         if (entry.finalizer != native_finalizer)
             continue;
-        auto& cell = engine::require_native_data_image(data).native_cell<void*>(entry.cell);
+        auto& image = engine::require_native_data_image(data);
+        auto& cell = image.native_cell<void*>(entry.cell);
         if (auto* const allocation = cell) {
             engine::release_owner_storage(memory, allocation);
-            //Only433B32BF/433B1FE9 clear their live pointer after the free
-            //boundary. Every other terminal callback preserves all cells.
+            // Only 433B32BF/433B1FE9 clear their pointer in the native binary.
             if (entry.clear_after_free)
                 cell = nullptr;
+        }
+        if (entry.cell == 0x434797A0u) {
+            // The source application destroys ShotModelBoneStorage after the
+            // CRT exit callbacks. Both share this vector, so revoke ownership
+            // here to prevent its C++ destructor from freeing the block again.
+            image.native_cell<std::array<void*, 3>>(entry.cell).fill(nullptr);
         }
         return;
     }

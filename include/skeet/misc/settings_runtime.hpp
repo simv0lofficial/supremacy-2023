@@ -1,5 +1,6 @@
 #pragma once
 #include "skeet/menu_window.hpp"
+#include "skeet/misc/hidden_cvars.hpp"
 #include <cstdint>
 
 namespace skeet {
@@ -54,6 +55,8 @@ public:
     const std::int32_t* dpi_scale = nullptr;
     const std::uint8_t* lock_layout = nullptr;
     const std::uint8_t* allow_custom_events = nullptr;
+    const std::uint8_t* unlock_hidden_cvars = nullptr;
+    HiddenCvars hidden_cvars;
     std::int32_t& previous_dpi_scale; // live4347CA04
     std::uint8_t& previous_lock_layout; // live4346D550
     std::uint8_t& previous_custom_events; // live4347CA38
@@ -64,6 +67,7 @@ public:
     void dpi_scale_changed(); // source reset precedes this, 0x433379D4
     void lock_layout_changed(); // complete 0x4332A6C5 coordination
     void allow_custom_events_changed(); // complete 0x4333D25B
+    void unlock_hidden_cvars_changed();
     void reset_menu_layout(); // 0x43342FF1, native built-in layout block
     void request_unload(); // 0x433A0637 coordination
     void max_usercmd_ticks_changed(std::int32_t value); // complete 0x433EE188

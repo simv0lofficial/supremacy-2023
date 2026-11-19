@@ -42,4 +42,14 @@ int64_t __cdecl compat_ftello64(FILE* stream) {
 decltype(&compat_fseeko64) imp_fseeko64 __asm__("__imp__fseeko64") = &compat_fseeko64;
 decltype(&compat_ftello64) imp_ftello64 __asm__("__imp__ftello64") = &compat_ftello64;
 
+int lj_err_unwind_win(void* rec, void* f, void* ctx, void* disp);
+
+uintptr_t skeet_lua_seh_handler_address(void) {
+    return (uintptr_t)&lj_err_unwind_win;
+}
+
+int skeet_lua_can_unwind_seh_frame(const void* registration) {
+    return registration != nullptr;
+}
+
 }

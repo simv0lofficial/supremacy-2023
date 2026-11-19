@@ -2345,7 +2345,7 @@ void NativeSequenceRuntime::process(void* player, std::uintptr_t incoming) {
                 engine::invoke<void>(bindings_.model_cache, 34);
                 if (tag)
                     refresh_.schedule_full_update(refresh_.current_time() + 0.25f);
-            } else if (entity_class == state_.viewmodel_class) {
+            } else if (entity_class == state_.weapon_world_model_class) {
                 local = bindings_.receive.local_player;
                 if (!local)
                     continue;
@@ -2490,7 +2490,7 @@ Settings& require_inputs(client::ClientRuntimeStorage& storage,
     if (&configuration.storage() != &storage || &imports.data != &storage.data())
         throw std::invalid_argument(
             "Skin runtime requires its canonical configuration and data owners");
-    if (!imports.seed_random || !imports.random_integer || !imports.viewmodel_class ||
+    if (!imports.seed_random || !imports.random_integer || !imports.weapon_world_model_class ||
         !imports.knife_class)
         throw std::invalid_argument(
             "Skin runtime requires genuine engine random imports and client class objects");
@@ -2621,7 +2621,7 @@ struct SkinsRuntimeOwner::Data {
     events::DeathWeaponIconsListener death_listener;
     // The original networkable method returns ClientClass*, represented by a
     // dword in the source runtime. These are actual class-object identities.
-    const std::uint32_t viewmodel_class, knife_class;
+    const std::uint32_t weapon_world_model_class, knife_class;
     client::SkinRuntimeFactoryBindings factories;
     SequenceOwnerBindings sequence_factory;
 
@@ -2673,8 +2673,8 @@ struct SkinsRuntimeOwner::Data {
           death{cell<void*>(storage, 0x4346A514u), cell<void*>(storage, 0x4346A890u), nullptr},
           death_fields(death_offsets(storage.offsets().globals)), death_icons(settings, sequence),
           death_listener{death_icons, death, death_fields},
-          viewmodel_class(static_cast<std::uint32_t>(
-              reinterpret_cast<std::uintptr_t>(imports.viewmodel_class))),
+          weapon_world_model_class(static_cast<std::uint32_t>(
+              reinterpret_cast<std::uintptr_t>(imports.weapon_world_model_class))),
           knife_class(
               static_cast<std::uint32_t>(reinterpret_cast<std::uintptr_t>(imports.knife_class))),
           factories{storage.configuration(),
@@ -2700,7 +2700,7 @@ struct SkinsRuntimeOwner::Data {
                            cell<void*>(storage, 0x434683E0u),
                            cell<void*>(storage, 0x4346A890u),
                            cell<void*>(storage, 0x43467198u),
-                           viewmodel_class,
+                           weapon_world_model_class,
                            knife_class,
                            viewmodel_model,
                            death_listener,
@@ -2808,7 +2808,7 @@ struct SequenceOwner {
         register_integer(registry.descriptors, setting.knife_model_ct, 0xB3C4B6CA);
         auto& state = bindings.state;
         state.inventory_resolver = bindings.entity_list;
-        state.viewmodel_class = bindings.viewmodel_class;
+        state.weapon_world_model_class = bindings.weapon_world_model_class;
         state.knife_class = bindings.knife_class;
         state.original_model = state.original_definition = -1;
         state.inspection_sequence = "lookat01";
@@ -3187,7 +3187,7 @@ void update_sequences(const Settings& settings, SequenceRuntime& state,
                 engine.end_model_cache_lock();
                 if (entry.tag)
                     engine.schedule_full_update(engine.current_time() + 0.25f);
-            } else if (entity->class_id == state.viewmodel_class) {
+            } else if (entity->class_id == state.weapon_world_model_class) {
                 local = engine.local_player();
                 if (!local)
                     continue;

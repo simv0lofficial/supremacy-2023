@@ -1,5 +1,7 @@
 // Menu Component: form
 #include "skeet/menu_window.hpp"
+#include "skeet/popup_menu.hpp"
+#include <algorithm>
 #include <bit>
 #include <windows.h>
 #include <stdexcept>
@@ -22,11 +24,19 @@ inline i32 sub(i32 a, i32 b) noexcept {
 }
 }
 void MenuWindow::update_dpi(float scale) { // 0x433B23FC
-    geometry.size = scale_size(default_size, scale);
+    const auto minimum = scale_size(default_size, scale);
+    const auto previous = size_for_persistence();
+    const auto scaled = scale_size(previous, scale / input.scale);
+    preferred_size_ = {std::max(minimum.x, scaled.x), std::max(minimum.y, scaled.y)};
+    geometry.size = preferred_size_;
     input.scale = scale;
     input.slider_metrics = {round_layout_coordinate(40.0f * scale),
                             round_layout_coordinate(200.0f * scale),
                             round_layout_coordinate(100.0f * scale)};
+    if (tab_context_menu) {
+        tab_context_menu->reset_input();
+        tab_context_menu->dpi_changed(scale, input.slider_metrics);
+    }
     auto y = 20;
     for (auto*& tab : std::span(tabs)) {
         tab->dpi_changed(scale, input.slider_metrics);
@@ -39,6 +49,72 @@ void MenuWindow::update_dpi(float scale) { // 0x433B23FC
         tab->reflow_categories();
         tab->resize(input.slider_metrics);
     }
+    const auto viewport = viewport_;
+    viewport_ = {};
+    update_viewport(viewport);
+}
+void MenuWindow::resize(Point size) {
+    preferred_size_ = size;
+    resize_layout(size);
+}
+void MenuWindow::resize_layout(Point size) {
+    if (size.x == geometry.size.x && size.y == geometry.size.y)
+        return;
+    geometry.size = size;
+    for (auto* tab : tabs)
+        tab->resize(input.slider_metrics);
+}
+void MenuWindow::move(Point next) noexcept {
+    position = next;
+    centered_ = false;
+}
+void MenuWindow::restore_size(Point saved, Point viewport) {
+    const auto minimum = scale_size(default_size, input.scale);
+    // Older source builds wrote window coordinates into these size records.
+    if (saved.x < minimum.x || saved.y < minimum.y)
+        return;
+    resize(saved);
+    viewport_ = {};
+    update_viewport(viewport);
+}
+Point MenuWindow::size_for_persistence() const noexcept {
+    return preferred_size_.x > 0 && preferred_size_.y > 0 ? preferred_size_ : geometry.size;
+}
+bool MenuWindow::update_viewport(Point viewport) {
+    // Minimized/uninitialized windows must not shrink saved dimensions or
+    // consume the first-launch centering request.
+    if (viewport.x <= 0 || viewport.y <= 0)
+        return false;
+    if (!startup_placement_pending && viewport.x == viewport_.x && viewport.y == viewport_.y)
+        return true;
+    viewport_ = viewport;
+    const auto minimum = scale_size(default_size, input.scale);
+    const auto preferred = size_for_persistence();
+    resize_layout({std::clamp(preferred.x, minimum.x, std::max(viewport.x, minimum.x)),
+                   std::clamp(preferred.y, minimum.y, std::max(viewport.y, minimum.y))});
+    const Point limit{std::max(0, viewport.x - geometry.size.x),
+                      std::max(0, viewport.y - geometry.size.y)};
+    if (startup_placement_pending)
+        centered_ = true;
+    if (centered_)
+        position = {limit.x / 2, limit.y / 2};
+    else
+        position = {std::clamp(position.x, 0, limit.x), std::clamp(position.y, 0, limit.y)};
+    startup_placement_pending = false;
+    return true;
+}
+void MenuWindow::refresh_viewport() {
+    WindowClientBounds bounds{};
+    if (event_services.client_bounds(event_services.context, native_window, bounds))
+        update_viewport({bounds.right - bounds.left, bounds.bottom - bounds.top});
+}
+void MenuWindow::finish_resize() {
+    const bool changed = (input.mouse_flags & 8u) && (geometry.size.x != resize_start_size.x ||
+                                                      geometry.size.y != resize_start_size.y);
+    input.mouse_flags &= ~12u;
+    button_flags &= ~1u;
+    if (changed && resize_finished.save)
+        resize_finished.save(resize_finished.context);
 }
 void GuiDpiState::refresh(bool force) { // 0x4339F0AD
     if (setting_widget)
@@ -186,10 +262,12 @@ void MenuWindow::update_transition(RenderQueue& queue) { // 0x43384045
             opacity = 1.0f;
         }
     } else if (transition_state == 1) {
+        if (tab_context_menu)
+            tab_context_menu->reset_input();
         const auto elapsed = read_ticks(clock_context) - transition_started;
         auto progress = static_cast<float>(elapsed) / 150.0f;
         if (progress > 1.0f) {
-            input.mouse_flags &= ~std::uint32_t(12);
+            finish_resize();
             transition_state = 0;
             opacity = 1.0f;
             auto flags = input.mouse_flags;
@@ -217,6 +295,10 @@ void MenuWindow::draw(RenderQueue& queue, std::uint32_t accent) { // 0x433AC5E2
     for (auto* tab : std::span(tabs))
         if (tab->visible)
             tab->draw(queue, position, accent);
+    if (tab_context_menu && tab_context_menu->open && tab_context_menu->parent->visible) {
+        const auto& bounds = tab_context_menu->parent->geometry.bounds;
+        tab_context_menu->draw(queue, {add(position.x, bounds.x), add(position.y, bounds.y)}, accent);
+    }
 }
 }
 
@@ -257,10 +339,40 @@ void modifier(MenuWindow& window, std::uint32_t key, bool down) noexcept {
     else
         window.button_flags &= ~mask;
 }
+bool tab_context_input(MenuWindow& window, const InputMessage& message, Point cursor) {
+    auto* popup = window.tab_context_menu;
+    if (!popup)
+        return false;
+    if (popup->open) {
+        if (popup->mouse(message, cursor))
+            return true;
+        if (message.message == WM_LBUTTONDOWN || message.message == WM_RBUTTONUP)
+            popup->reset_input();
+        else if (popup->hit_test(cursor))
+            return true;
+    }
+    if (message.message != WM_RBUTTONUP || !inside(window))
+        return false;
+    for (auto* tab : window.tabs) {
+        if (!tab->visible || !tab->hit_test(cursor))
+            continue;
+        active(window).reset_input();
+        popup->parent = tab;
+        auto& rect = popup->geometry.bounds;
+        rect.x = std::clamp(cursor.x, 0, std::max(0, window.geometry.size.x - rect.width)) -
+                 tab->geometry.bounds.x;
+        rect.y = std::clamp(cursor.y, 0, std::max(0, window.geometry.size.y - rect.height)) -
+                 tab->geometry.bounds.y;
+        popup->open = true;
+        return true;
+    }
+    return false;
+}
 }
 bool window_client_bounds(void*, std::uintptr_t window, WindowClientBounds& bounds) {
     RECT native{};
-    if (!GetClientRect(reinterpret_cast<HWND>(window), &native))
+    if (IsIconic(reinterpret_cast<HWND>(window)) ||
+        !GetClientRect(reinterpret_cast<HWND>(window), &native))
         return false;
     bounds = {native.left, native.top, native.right, native.bottom};
     return true;
@@ -275,6 +387,8 @@ bool window_screen_to_client(void*, std::uintptr_t window, Point& cursor) {
 bool route_window_mouse(MenuWindow& window, WindowMessage& message) { // 0x4334EAE8
     const Point relative{sub(window.cursor.x, window.position.x),
                          sub(window.cursor.y, window.position.y)};
+    if (tab_context_input(window, message.input, relative))
+        return true;
     bool handled = false;
     const auto tabs = std::span(window.tabs);
     for (auto i = tabs.size(); i != 0;) {
@@ -291,6 +405,8 @@ bool decode_window_mouse(MenuWindow& window, WindowMessage& message) { // 0x4339
 void select_window_tab(MenuWindow& window, std::uint32_t requested) { // 0x433B75D3
     if (requested == window.navigation.active_tab || requested >= window.tabs.size())
         return;
+    if (window.tab_context_menu)
+        window.tab_context_menu->reset_input();
     active(window).reset_input();
     window.navigation.active_tab = requested;
     active(window).activate();
@@ -333,6 +449,10 @@ void next_window_focus(MenuWindow& window) { // 0x433CBE38
 }
 bool window_key_down(MenuWindow& window, WindowMessage& message) { // 0x433B6EEC
     const auto key = message.input.parameter;
+    if (key == VK_ESCAPE && window.tab_context_menu && window.tab_context_menu->open) {
+        window.tab_context_menu->reset_input();
+        return true;
+    }
     modifier(window, key, true);
     if (key == 9) {
         if (window.button_flags & 8) {
@@ -382,11 +502,12 @@ bool window_left_down(MenuWindow& window, WindowMessage& message) { // 0x43327C8
         sub(window.cursor.y, window.position.y) > sub(window.geometry.size.y, grip);
     window.input.mouse_flags |= resize ? 8 : 4;
     window.drag_anchor = window.cursor;
+    if (resize)
+        window.resize_start_size = window.geometry.size;
     return true;
 }
 bool window_left_up(MenuWindow& window, WindowMessage& message) { // 0x433EE1F2
-    window.input.mouse_flags &= ~12u;
-    window.button_flags &= ~1u;
+    window.finish_resize();
     const auto handled = decode_window_mouse(window, message);
     window.input.mouse_flags &= ~12u;
     window.button_flags &= ~1u;
@@ -431,26 +552,24 @@ bool window_mouse_move(MenuWindow& window, WindowMessage& message) { // 0x4339E9
                 next.y = maximum.y;
         }
         if (next.x != window.position.x || next.y != window.position.y) {
-            window.position = next;
+            window.move(next);
             window.drag_anchor = window.cursor;
         }
     } else if ((window.input.mouse_flags & 8) && (window.cursor.x != window.drag_anchor.x ||
                                                   window.cursor.y != window.drag_anchor.y)) {
-        const auto previous = window.geometry.size;
-        const Point next{add(previous.x, sub(window.cursor.x, window.drag_anchor.x)),
-                         add(previous.y, sub(window.cursor.y, window.drag_anchor.y))};
+        auto size = window.geometry.size;
+        const Point next{add(size.x, sub(window.cursor.x, window.drag_anchor.x)),
+                         add(size.y, sub(window.cursor.y, window.drag_anchor.y))};
         const auto minimum = scale_size(window.default_size, window.input.scale);
         if (next.x >= minimum.x) {
-            window.geometry.size.x = next.x;
+            size.x = next.x;
             window.drag_anchor.x = window.cursor.x;
         }
         if (next.y >= minimum.y) {
-            window.geometry.size.y = next.y;
+            size.y = next.y;
             window.drag_anchor.y = window.cursor.y;
         }
-        if (previous.x != window.geometry.size.x || previous.y != window.geometry.size.y)
-            for (auto* tab : std::span(window.tabs))
-                tab->resize(window.input.slider_metrics);
+        window.resize(size);
     }
     const auto buttons = message.input.parameter & 15;
     const auto changed = window.button_flags ^ buttons;

@@ -1,4 +1,5 @@
 #include "skeet/script/ui.hpp"
+#include "skeet/config_storage/load_state.hpp"
 #include "detail.hpp"
 #include <algorithm>
 #include <mutex>
@@ -63,6 +64,8 @@ void UiBindings::initialize(Bridge& bridge) {
 }
 
 void UiBindings::widget_changed(void* context, ui::Widget&) {
+    if (config_loading_flag())
+        return;
     auto& callback = *static_cast<CallbackContext*>(context);
     callback.bindings->dispatch_callback(*callback.bridge, callback.reference);
 }

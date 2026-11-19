@@ -52,6 +52,9 @@ public:
     void dpi_changed(float scale, const SliderMetrics& metrics) override;
     void draw(RenderQueue& queue, Point origin, std::uint32_t accent) const override;
     static void menu_selected(Widget& owner, PopupMenu& popup, std::uint32_t index);
+
+private:
+    std::uint32_t default_color_ = 0;
 };
 
 } // namespace skeet::ui

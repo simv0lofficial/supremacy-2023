@@ -46,10 +46,18 @@ std::vector<ScriptRecord> discover_scripts(std::span<const BuiltinModule> builti
                         break;
                     }
                 }
+                auto path = *directory;
+                if (!path.empty() && path.back() != u'\\')
+                    path.push_back(u'\\');
+                path += file.filename;
                 discovered.push_back({script_file_time(file.last_write_time), std::uint8_t(startup),
-                                      std::move(name)});
+                                      std::move(name), std::move(path)});
             }
-            directory->append(u"\\lua");
+            if (pass == 0) {
+                if (!directory->empty() && directory->back() != u'\\')
+                    directory->push_back(u'\\');
+                directory->append(u"lua");
+            }
         }
     }
     return discovered;

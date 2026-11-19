@@ -1,6 +1,7 @@
 #pragma once
 #include "skeet/client/command_frame.hpp"
 #include "skeet/client/player_state.hpp"
+#include "skeet/rage/experimental_switch.hpp"
 #include <vector>
 #include <optional>
 
@@ -18,6 +19,8 @@ struct RecordCandidateBindings {
     std::int32_t maximum_unlag_ms; // global43468230
     std::optional<std::int32_t> prediction_limit; // explicit decoded fixture input only
     const client::CommandBudgetBindings* live_budget = nullptr;
+    ExperimentalSwitch validate_record{};
+    ExperimentalSwitch rebuild_pose{};
 };
 
 // Complete433AEBA8. Appends simulation ticks to the existing output, retaining

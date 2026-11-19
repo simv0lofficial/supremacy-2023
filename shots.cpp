@@ -49,6 +49,8 @@
 #include "skeet/engine/native_data_image.hpp"
 #include "skeet/client/buffered_shot_lifecycle.hpp"
 #include "skeet/rage/shot_feedback.hpp"
+#include "skeet/rage/jitter_log.hpp"
+#include "skeet/rage/shot_log.hpp"
 #include "skeet/rage/spread_miss_log.hpp"
 #include "skeet/rage/spread.hpp"
 #include "skeet/rage/settings.hpp"
@@ -384,8 +386,7 @@ const lagcomp::EvaluationState* repair_buffered_shot(client::CommandFrame& frame
     recalculate_target_priorities(scratch.candidates, scanner.targeting);
     if (scratch.candidates.count > 1)
         sort_target_candidates(scratch.candidates);
-    const FinalTargetContextBindings final{scanner, owner->final_target.current_bone_counter,
-                                           owner->settings_menu, owner->final_target.jobs};
+    const auto final = owner->final_target.with_scan(scanner);
     auto choice = select_acquired_target_for_shot(scratch.candidates, storage, frame, state, final);
     for (std::uint32_t ordinal = 0; ordinal < state.evaluation_count; ++ordinal)
         synchronize_evaluation_state(storage.candidates[ordinal], storage.evaluations[ordinal]);
@@ -667,7 +668,6 @@ public:
         engine_client = b.engine_client;
         initialize_shot_log_settings(b.configuration, b.settings);
         b.state.pending.clear();
-        b.state.extrapolation_shots.clear();
         b.state.events.has_pending_shots = false;
         constexpr char message[] = "Missed shot due to spread";
         static_assert(sizeof(message) == 26);
@@ -767,7 +767,6 @@ FeedbackPacketOffsets feedback_packet_offsets(const engine::NativeOffsetStorage&
 void reset_feedback_owner(FeedbackOwner& owner) noexcept {
     auto& state = owner.bindings.state;
     state.pending.clear();
-    state.extrapolation_shots.clear();
     state.events.feedback.clear();
     state.fire_snapshots.clear();
     state.events.has_pending_shots = false;
@@ -1134,7 +1133,7 @@ struct FeedbackRuntimeOwner::Data {
                s.data().native_cell<float>(0x43469254u),
                s.data().native_cell<float>(0x43476928u),
                c.settings_menu().maximum_unlag,
-               nullptr},
+               c.rage_settings().global.experimental(ExperimentalRageOption::resolver)},
           packet{c.rage_settings().global.enabled.value,
                  c.rage_settings().global.anti_aim_correction.value,
                  s.data().native_cell<void*>(0x4346A894u),
@@ -1158,7 +1157,9 @@ struct FeedbackRuntimeOwner::Data {
               s.data().native_cell<float*>(0x4346A338u),
               &s.data().native_cell<std::uint32_t>(0x434759C0u),
               attempts,
-              nullptr},
+              c.rage_settings().global.experimental(ExperimentalRageOption::resolver),
+              {&c.rage_settings().global.jitter_fix.value,
+               &c.rage_settings().global.experimental_rage.value}},
           factory{registry(s, 0x43475B78u),
                   s.command_phases(),
                   s.entity_observers(),
@@ -1175,7 +1176,9 @@ struct FeedbackRuntimeOwner::Data {
                   packet,
                   *s.data().native_cell<std::int32_t*>(0x43475B2Cu),
                   s.data().native_cell<void*>(0x4346A514u),
-                  s.data().native_cell<FeedbackOwner*>(0x43475A7Cu)} {}
+                  s.data().native_cell<FeedbackOwner*>(0x43475A7Cu)} {
+        runtime.resolver_rework = c.rage_settings().global.experimental(ExperimentalRageOption::resolver);
+    }
 };
 FeedbackRuntimeOwner::FeedbackRuntimeOwner(
     ClientRuntimeStorage& s, const client::EngineRuntimeBindings& e,
@@ -1318,8 +1321,7 @@ void shot_capture_target(ShotFeedbackRecord& destination, const lagcomp::Evaluat
 }
 
 bool publish_pending_shot(const client::CommandFrame& frame, const lagcomp::EvaluationState& source,
-                          std::int32_t shot_index, const PendingShotPublicationBindings& bindings,
-                          std::int32_t extrapolation_ticks) {
+                          std::int32_t shot_index, const PendingShotPublicationBindings& bindings) {
     auto* appended = append_current_pending_shot(bindings);
     if (!appended)
         return false;
@@ -1353,24 +1355,19 @@ bool publish_pending_shot(const client::CommandFrame& frame, const lagcomp::Eval
         shot.words[8] = UINT32_MAX;
     }
     shot_capture_target(shot, source, frame.origin_dc, 0, bindings);
-    if (extrapolation_ticks > 0) {
-        feedback_owner_state(bindings.active)
-            ->extrapolation_shots.push_back({frame.command_number_ac, shot_index,
-                                             extrapolation_ticks,
-                                             source.record.header.simulation_tick});
-        feedback_owner_runtime(bindings.active)
-            ->normal_log.console_format(
-                "[extrapolation] FIRE shot=%d target=%u +%d ticks record=%d", shot_index,
-                source.words[1], extrapolation_ticks, source.record.header.simulation_tick);
-    }
     auto& player = *bindings.players.get(source.words[1]);
     const auto mode = source.record.header.resolver_index;
     field(&player.native, 0x14 + std::uint32_t(mode) * 0x24, bits(*bindings.current_time));
     write_mode_yaw(player.native, source);
     // Publication is not feedback. Wait for the actual shot ray before
     // rejecting a pose; a pending high-chance shot has not missed yet.
-    if (bindings.resolver_rework && *bindings.resolver_rework)
+    if (bindings.resolver_rework)
         return true;
+    if (bindings.jitter_fix) {
+        const auto* evidence = player.jitter.find(source.record.header);
+        if (evidence && evidence->applied_to(source.record.header))
+            return true;
+    }
     if (!(shot.state.words[13] & 4U) || !shot.state.record.header.resolver_index ||
         !(real(shot.state.words[14]) > 0.9f) ||
         integer(shot.state.words[10]) < integer(shot.state.words[2]))
@@ -1746,7 +1743,7 @@ struct SnapshotFeedbackValues {
         return runtime.ray_tests_disabled;
     }
     bool reworked() const noexcept {
-        return runtime.resolver_rework && *runtime.resolver_rework;
+        return bool(runtime.resolver_rework);
     }
 };
 static_assert(offsetof(client::NativePlayerStateLayout, resolver_slots) == 0x10);
@@ -1792,49 +1789,26 @@ client::PlayerState& target_state(ShotFeedbackRuntime& runtime, std::int32_t ind
         throw std::out_of_range("Native pending shot requires target index 1..64");
     return *runtime.players.get(std::uint32_t(index));
 }
-void log_extrapolation(ShotFeedbackState& state, const ShotRecordView& shot,
-                       ShotFeedbackRuntime& runtime, const char* outcome, std::uint32_t reason,
-                       int damage = 0, int hitgroup = 0) {
-    // Choke and generated commands rewrite word3. Word1 remains the shot's
-    // publication identity throughout matching, logging and retirement.
-    for (auto& tag : state.extrapolation_shots)
-        if (tag.original_command == integer(shot.record.words[1]) &&
-            tag.id == integer(shot.record.words[5])) {
-            if (tag.reported)
-                return;
-            tag.reported = true;
-            constexpr const char* reasons[]{"unconfirmed/resolver", "spread or obstruction",
-                                            "prediction mismatch", "death", "weapon state changed"};
-            runtime.normal_log.console_format(
-                "[extrapolation] %s shot=%d target=%d +%d ticks record=%d damage=%d hitgroup=%d reason=%s",
-                outcome, tag.id, shot.target(), tag.ticks, tag.simulation_tick, damage, hitgroup,
-                reason < 5 ? reasons[reason] : "none");
-            return;
-        }
-}
-void notify_miss(ShotFeedbackState& state, const ShotRecordView& shot, std::uint32_t reason,
-                 ShotFeedbackRuntime& runtime) {
-    log_extrapolation(state, shot, runtime, "MISS", reason);
+void notify_miss(ShotFeedbackState& state, ShotFeedbackRuntime& runtime,
+                 const ShotRecordView& shot, std::uint32_t reason) {
     const auto event = shot.script_shot();
+    rage::log_shot_result(runtime.spread_log_settings, runtime.normal_log, shot, false, reason);
+    rage::log_jitter_result(runtime.players, runtime.normal_log, shot, false, reason);
     script::dispatch_aim_miss(state.scripts, event, reason);
     state.notices.push_back({ShotFeedbackNoticeKind::miss, event, reason, 0, 0, 0});
 }
-void notify_hit(ShotFeedbackState& state, const ShotRecordView& shot, const events::ShotEvent& hurt,
-                ShotFeedbackRuntime& runtime) {
+void notify_hit(ShotFeedbackState& state, ShotFeedbackRuntime& runtime,
+                const ShotRecordView& shot, const events::ShotEvent& hurt) {
     const auto event = shot.script_shot();
     const auto target = integer(hurt.payload[0]), group = integer(hurt.payload[1]),
                damage = integer(hurt.payload[2]);
-    log_extrapolation(state, shot, runtime, target == shot.target() ? "HIT" : "HIT OTHER TARGET",
-                      UINT32_MAX, damage, group);
+    rage::log_shot_result(runtime.spread_log_settings, runtime.normal_log, shot, true, 0,
+                         target, group, damage);
+    rage::log_jitter_result(runtime.players, runtime.normal_log, shot, true, 0, target, group, damage);
     script::dispatch_aim_hit(state.scripts, event, target, group, damage);
     state.notices.push_back({ShotFeedbackNoticeKind::hit, event, 0, target, group, damage});
 }
 void erase_shot(ShotFeedbackState& state, std::size_t index) {
-    const ShotRecordView shot{state.pending[index]};
-    const auto command = integer(shot.record.words[1]), id = integer(shot.record.words[5]);
-    std::erase_if(state.extrapolation_shots, [&](const auto& value) {
-        return value.original_command == command && value.id == id;
-    });
     for (std::size_t next = index + 1; next < state.pending.size(); ++next)
         lagcomp::assign_evaluation(state.pending[next - 1], state.pending[next]);
     state.pending.pop_back();
@@ -2044,13 +2018,19 @@ void classify_shot_ray_body(ShotFeedbackState& state, ShotFeedbackRecord& record
                             ShotFeedbackRuntime& runtime, Values& values) {
     ShotRecordView shot{record};
     std::uint32_t reason = 0;
-    if (values.reworked() && (shot.flags() & 0x20u))
+    const bool jitter = rage::jitter_shot_used(runtime.players, shot);
+    if (shot.flags() & 0x20u) {
+        rage::log_shot_result(runtime.spread_log_settings, runtime.normal_log, shot, false, 5);
+        rage::log_jitter_result(runtime.players, runtime.normal_log, shot, false, 5);
+    }
+    if ((values.reworked() || jitter) && (shot.flags() & 0x20u)) {
         return;
+    }
     const auto finite = [](const RageVector& value) {
         return std::all_of(value.begin(), value.end(),
                            [](float axis) { return std::isfinite(axis); });
     };
-    if (values.reworked() &&
+    if ((values.reworked() || jitter) &&
         ((origin && !finite(*origin)) ||
          (direction && (!finite(*direction) || distance_squared_zyx(*direction) < 1e-8f)))) {
         origin = nullptr;
@@ -2078,8 +2058,10 @@ void classify_shot_ray_body(ShotFeedbackState& state, ShotFeedbackRecord& record
         trace_ballistic_bullet(runtime.ballistics, 0, shot.origin(), end, filter, query);
         const RageRay ray{*origin, difference(query.trace.end, *origin)};
         const auto hitboxes = runtime.engine.hitboxes(shot.model(), shot.hitbox_set());
-        const auto count = std::min<std::size_t>(19, hitboxes.size());
-        reason = 1;
+        const auto count = jitter && !(record.state.record.header.flags & 4u)
+                               ? 0u
+                               : std::min<std::size_t>(19, hitboxes.size());
+        reason = jitter && !count ? 0 : 1;
         for (std::size_t index = 0; index < count; ++index) {
             const auto& box = hitboxes[index];
             auto matrix = record.state.record.matrices[index];
@@ -2096,14 +2078,15 @@ void classify_shot_ray_body(ShotFeedbackState& state, ShotFeedbackRecord& record
             rage::log_spread_miss(runtime.spread_log_settings, runtime.normal_log);
     }
     if (!(shot.flags() & 0x20U)) {
-        notify_miss(state, shot, reason, runtime);
+        notify_miss(state, runtime, shot, reason);
         shot.flags() |= 0x20U;
     }
     if (reason)
         return;
     // Missing impact data is an unknown miss, not evidence against a pose.
-    if (values.reworked() && (!verified_intersection || !(record.state.record.header.flags & 4u) ||
-                              (shot.flags() & 0x1Eu)))
+    if ((values.reworked() || jitter) &&
+        (!verified_intersection || !(record.state.record.header.flags & 4u) ||
+         (shot.flags() & 0x1Eu)))
         return;
     auto& target = target_state(runtime, shot.target());
     runtime.player_adjustments.records[std::size_t(shot.target())].adjustments.correction_active =
@@ -2211,7 +2194,7 @@ void reconcile_shot_feedback_body(ShotFeedbackState& state, ShotFeedbackRuntime&
                 if (entity.exists && entity.life_id != -1 &&
                     entity.life_id > shot.target_life_id()) {
                     if (!(shot.flags() & 0x20U)) {
-                        notify_miss(state, shot, 4, runtime);
+                        notify_miss(state, runtime, shot, 4);
                         shot.flags() |= 0x20U;
                     }
                     erase_shot(state, index);
@@ -2236,12 +2219,11 @@ void reconcile_shot_feedback_body(ShotFeedbackState& state, ShotFeedbackRuntime&
                 for (auto& record : state.pending) {
                     ShotRecordView shot{record};
                     if (!(shot.flags() & 0x20U)) {
-                        notify_miss(state, shot, 3, runtime);
+                        notify_miss(state, runtime, shot, 3);
                         shot.flags() |= 0x20U;
                     }
                 }
                 state.pending.clear();
-                state.extrapolation_shots.clear();
                 state.fire_snapshots.clear();
                 finish();
                 return;
@@ -2249,7 +2231,7 @@ void reconcile_shot_feedback_body(ShotFeedbackState& state, ShotFeedbackRuntime&
             for (auto& record : state.pending) {
                 ShotRecordView shot{record};
                 if (shot.target() == victim && !(shot.flags() & 0x20U)) {
-                    notify_miss(state, shot, 3, runtime);
+                    notify_miss(state, runtime, shot, 3);
                     shot.flags() |= 0x20U;
                 }
             }
@@ -2315,7 +2297,7 @@ void reconcile_shot_feedback_body(ShotFeedbackState& state, ShotFeedbackRuntime&
             direction_argument = &direction;
         }
         if (hurt) {
-            notify_hit(state, shot, *hurt, runtime);
+            notify_hit(state, runtime, shot, *hurt);
             if (!(shot.flags() & 0x20U) && runtime.engine.entity_by_index(shot.target()).exists)
                 confirm_target_hit(target_state(runtime, shot.target()), record);
         } else if (!(shot.flags() & 0x20U))
@@ -2349,8 +2331,6 @@ void reconcile_shot_feedback_body(ShotFeedbackState& state, ShotFeedbackRuntime&
                                 shot.shot_tick() &&
                             lagcomp::time_to_tick(entity.last_shot_time, values.interval()) ==
                                 shot.shot_tick()) {
-                            log_extrapolation(state, shot, runtime, "HIT INFERRED", UINT32_MAX,
-                                              shot.target_health() - int(entity.health));
                             confirm_target_hit(target_state(runtime, shot.target()), *candidate);
                             shot.flags() |= 0x20U;
                         }
@@ -2517,6 +2497,65 @@ std::array<RageSpreadSample, 32> hitchance_spread_samples(const SpreadCache& cac
         result[i] = cache.compensated[i * 4];
     return result;
 }
+std::uint32_t cached_spread_seed(std::uint32_t index) noexcept {
+    return cache_seeds[index];
+}
+bool prepare_complete_spread(CompleteSpread& result, const SpreadParameters& parameters,
+                              const SpreadTables& tables, const SpreadRandom& random,
+                              const ShotgunPattern& pattern, const RageTrigonometry& trig) {
+    result.valid = false;
+    result.pellets = 0;
+    if (parameters.pellet_count < 1 || parameters.pellet_count > int(CompleteSpread::maximum_pellets) ||
+        !std::isfinite(parameters.inaccuracy) || parameters.inaccuracy < 0 ||
+        !std::isfinite(parameters.spread) || parameters.spread < 0 ||
+        !std::isfinite(parameters.recoil_index) || parameters.recoil_index < 0 ||
+        parameters.recoil_index > 100000)
+        return false;
+    const unsigned pellets = unsigned(parameters.pellet_count);
+    if (pellets == 1) {
+        if (!tables.standard.data() || !tables.shotgun_patterns.data())
+            return false;
+        for (unsigned seed = 0; seed < CompleteSpread::seed_count; ++seed)
+            result.rays[seed][0] = generate_spread_sample(parameters, seed, tables, random, pattern, trig);
+    } else {
+        if (!random.seed || !random.uniform || (parameters.shotgun_patterns && !pattern.get))
+            return false;
+        // Installed server.dll RVA 4C4BA6..4C4F64 seeds once per shot. Without
+        // patterns, pellets share the first inaccuracy draw; their spread draws
+        // advance the stream. Pattern mode draws inaccuracy for every pellet.
+        const auto first_pellet = int(parameters.recoil_index) * int(pellets);
+        for (unsigned seed = 0; seed < CompleteSpread::seed_count; ++seed) {
+            random.seed(random.context, int(seed + 1));
+            SpreadSeed sample{};
+            for (unsigned pellet = 0; pellet < pellets; ++pellet) {
+                if (!pellet || parameters.shotgun_patterns) {
+                    sample.first_radius = random.uniform(random.context, 0, 1);
+                    const auto angle = random.uniform(random.context, 0, full_turn);
+                    sample.first_sine = trig.sine(angle);
+                    sample.first_cosine = trig.cosine(angle);
+                }
+                float angle = 0;
+                if (parameters.shotgun_patterns) {
+                    sample.second_radius = 0;
+                    pattern.get(pattern.context, parameters.weapon_id, parameters.fire_mode,
+                                first_pellet + int(pellet), angle, sample.second_radius);
+                } else {
+                    sample.second_radius = random.uniform(random.context, 0, 1);
+                    angle = random.uniform(random.context, 0, full_turn);
+                }
+                sample.second_sine = trig.sine(angle);
+                sample.second_cosine = trig.cosine(angle);
+                result.rays[seed][pellet] = combine(sample, parameters, limit_inaccuracy(parameters.inaccuracy));
+            }
+        }
+    }
+    for (const auto& seed : result.rays)
+        for (unsigned pellet = 0; pellet < pellets; ++pellet)
+            if (!std::isfinite(seed[pellet].first) || !std::isfinite(seed[pellet].second))
+                return false;
+    result.pellets = pellets;
+    return result.valid = true;
+}
 } // namespace skeet::rage
 
 // ============================================================================
@@ -2618,3 +2657,159 @@ RageShotCommit commit_accepted_rage_shot(RageShotState& state, RageShotCommitSta
     return RageShotCommit::recorded;
 }
 } // namespace skeet
+
+// ============================================================================
+// Subcomponent: jitter_log.cpp
+// ============================================================================
+
+namespace skeet::rage {
+void log_jitter_fire(client::PlayerState& player, misc::NormalLog& output,
+                     const TargetCandidate& candidate, const AcquisitionEvaluation& evaluation,
+                     std::int32_t id, std::int32_t command, bool pending) {
+    const auto& record = evaluation.record.header;
+    const auto& point = candidate.primary;
+    const auto policy = evaluation.settings.scan_policy();
+    const auto* evidence = player.jitter.find(record);
+    const bool applied = evidence && evidence->applied_to(record);
+    const auto* decision = !evidence ? "record-evidence-unavailable"
+                           : evidence->applied() && !applied ? "record-pose-updated"
+                           : resolver_runtime::jitter_decision_name(evidence->decision);
+    const auto estimate = evidence ? evidence->estimate : resolver_runtime::JitterPoseEstimate{};
+    output.console_status(applied,
+        "[jitter] FIRE id=%d cmd=%d target=%u record=%d aim_tick=%d hitbox=%d group=%d "
+        "point=(%.1f,%.1f,%.1f) damage=%d/min%d hc=%.1f%%/min%.1f%% safe=%u "
+        "prefer_body=%u prefer_safe=%u point_rank=0x%X target_rank=0x%X "
+        "eye=%.1f feet=%.1f anchor=%.1f pose_error=%.1f margin=%.1f mode=%u "
+        "attempt=%u correction=%s feedback=%s",
+        id, command, candidate.entity_index, record.simulation_tick, evaluation.requested_tick,
+        point.hitbox, point.hitgroup, point.position[0], point.position[1], point.position[2],
+        point.damage, policy.minimum_damage, point.chance * 100, policy.minimum_chance * 100,
+        unsigned(bool(point.flags & 1u)), unsigned(candidate.prefer_body),
+        unsigned(candidate.prefer_safe), point.priority, candidate.priority,
+        std::bit_cast<float>(record.player_history_1ac), record.animation_yaw, estimate.anchor,
+        estimate.error, estimate.margin, unsigned(record.resolver_index), unsigned(record.resolver_mode),
+        decision,
+        pending ? "pending" : "unavailable");
+    if (pending)
+        player.jitter.shots[player.jitter.next_shot++ % player.jitter.shots.size()] = {
+            id, command, evaluation.requested_tick, true, applied};
+}
+namespace {
+resolver_runtime::JitterLoggedShot* find_shot(client::PlayerStateCache& players,
+                                              const ShotRecordView& shot) noexcept {
+    const auto event = shot.script_shot();
+    if (event.target < 1 || event.target > 64)
+        return nullptr;
+    auto* player = players.find(std::uint32_t(event.target));
+    if (!player)
+        return nullptr;
+    for (auto& entry : player->jitter.shots)
+        // words[3] is moved to the send command by choke reconciliation.
+        // words[1] retains the original firing command used by FIRE.
+        if (entry.id == event.id &&
+            entry.command == std::bit_cast<std::int32_t>(shot.record.words[1]) &&
+            entry.tick == event.tick)
+            return &entry;
+    return nullptr;
+}
+}
+bool jitter_shot_used(client::PlayerStateCache& players, const ShotRecordView& shot) noexcept {
+    const auto* entry = find_shot(players, shot);
+    return entry && entry->resolved;
+}
+void log_jitter_result(client::PlayerStateCache& players, misc::NormalLog& output,
+                       const ShotRecordView& shot, bool hit, std::uint32_t reason,
+                       std::int32_t target, std::int32_t group, std::int32_t damage) {
+    auto* tracked = find_shot(players, shot);
+    if (!tracked || !tracked->pending)
+        return;
+    tracked->pending = false;
+    const auto event = shot.script_shot();
+    if (hit) {
+        output.console_status(tracked->resolved && target == event.target && damage > 0,
+                              "[jitter] HIT id=%d cmd=%d target=%d actual_target=%d "
+                              "aim_group=%d hit_group=%d damage=%d",
+                              event.id, tracked->command, event.target, target, event.hitgroup,
+                              group, damage);
+    } else {
+        // A ray intersecting the reconstructed model is not proof of the
+        // server pose. Keep unknown misses distinct from measured spread.
+        constexpr const char* reasons[]{"unconfirmed-pose-or-registration",
+                                        "ray-model-mismatch(spread-or-obstruction)",
+                                        "prediction-error", "death", "target-state-changed"};
+        output.console_status(false, "[jitter] %s id=%d cmd=%d target=%d aim_group=%d reason=%s",
+                              reason == 5 ? "UNCONFIRMED" : "MISS", event.id, tracked->command,
+                              event.target, event.hitgroup,
+                              reason == 5 ? "health-change-without-hurt-event"
+                                          : reasons[reason < 5 ? reason : 0]);
+    }
+}
+} // namespace skeet::rage
+
+// ============================================================================
+// Subcomponent: shot_log.cpp
+// ============================================================================
+
+namespace skeet::rage {
+void log_shot_fire(const ShotLogSettings& settings, misc::NormalLog& output,
+                   const client::CommandFrame& frame, const client::Command& command,
+                   const TargetCandidate& candidate, const AcquisitionEvaluation& evaluation,
+                   std::int32_t id, bool pending) {
+    if (!settings.detailed.value)
+        return;
+    const auto& point = candidate.primary;
+    const auto& record = evaluation.record.header;
+    const auto policy = evaluation.settings.scan_policy();
+    output.console_format(
+        "[rage] FIRE id=%d cmd=%d target=%u hp=%d record_tick=%d selected_tick=%d cmd_tick=%d "
+        "hitbox=%d group=%d point=(%.2f,%.2f,%.2f) damage=%d/min%d hc=%.2f%%/min%.2f%% "
+        "spread=%.6f inaccuracy=%.6f safe=%u boosted=%u prefer_body=%u prefer_safe=%u "
+        "point_rank=0x%X target_rank=0x%X scans=%u feedback=%s",
+        id, frame.command_number_ac, candidate.entity_index, candidate.health,
+        record.simulation_tick, evaluation.requested_tick, command.tick, point.hitbox,
+        point.hitgroup, point.position[0], point.position[1], point.position[2], point.damage,
+        policy.minimum_damage, point.chance * 100.0f, policy.minimum_chance * 100.0f,
+        frame.spread_d0, frame.inaccuracy_c4, unsigned(bool(point.flags & 1u)),
+        unsigned(bool(point.flags & 4u)), unsigned(candidate.prefer_body),
+        unsigned(candidate.prefer_safe), point.priority, candidate.priority,
+        evaluation.ballistic_evaluations, pending ? "pending" : "unavailable");
+    output.console_format(
+        "[rage] RECORD id=%d cmd=%d recv_tick=%d record_cmd_tick=%d origin=(%.2f,%.2f,%.2f) "
+        "velocity=(%.2f,%.2f,%.2f) duck=%.3f eye_yaw=%.2f anim_yaw=%.2f "
+        "resolver_mode=%u attempt=%u state=%u flags=0x%X extrapolated=%u extra_ticks=%d",
+        id, frame.command_number_ac, record.receive_tick, record.command_tick,
+        record.origin[0], record.origin[1], record.origin[2], record.velocity[0],
+        record.velocity[1], record.velocity[2], record.duck_amount,
+        std::bit_cast<float>(record.player_history_1ac), record.animation_yaw,
+        unsigned(record.resolver_index), unsigned(record.resolver_mode),
+        unsigned(record.resolver_state), record.flags, unsigned(evaluation.extrapolated),
+        evaluation.extrapolation_ticks);
+}
+
+void log_shot_result(const ShotLogSettings& settings, misc::NormalLog& output,
+                     const ShotRecordView& shot, bool hit, std::uint32_t reason,
+                     std::int32_t target, std::int32_t group, std::int32_t damage) {
+    if (!settings.detailed.value)
+        return;
+    const auto event = shot.script_shot();
+    // Choke reconciliation can change words[3]; words[1] is the firing command.
+    const auto command = std::bit_cast<std::int32_t>(shot.record.words[1]);
+    const auto& record = shot.record.state.record.header;
+    const auto point = shot.target_point();
+    constexpr const char* reasons[]{"unconfirmed-pose-or-registration",
+        "ray-model-mismatch(spread-or-obstruction)", "prediction-error", "death",
+        "target-state-changed"};
+    output.console_format(
+        "[rage] %s id=%d cmd=%d target=%d actual_target=%d record_tick=%d selected_tick=%d "
+        "aim_group=%d hit_group=%d expected_damage=%d damage=%d hc=%.2f%% "
+        "point=(%.2f,%.2f,%.2f) resolver_mode=%u attempt=%u state=%u flags=0x%X reason=%s",
+        hit ? "HIT" : reason == 5 ? "UNCONFIRMED" : "MISS", event.id, command, event.target, hit ? target : 0,
+        record.simulation_tick, event.tick, event.hitgroup, hit ? group : 0,
+        std::bit_cast<std::int32_t>(shot.record.state.words[10]), hit ? damage : 0,
+        event.hit_chance * 100.0f, point[0], point[1], point[2],
+        unsigned(record.resolver_index), unsigned(record.resolver_mode),
+        unsigned(record.resolver_state), record.flags,
+        hit ? "player_hurt" : reason == 5 ? "health-change-without-hurt-event"
+                                         : reasons[reason < 5 ? reason : 0]);
+}
+} // namespace skeet::rage

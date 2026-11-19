@@ -21,6 +21,8 @@ public:
     std::vector<ListboxOption> options;
     std::u16string search;
     std::vector<std::uint16_t> filtered_indices;
+    // User selection only; config refreshes still use the ordinary callbacks.
+    std::vector<WidgetCallback> selection_callbacks;
 
     void set_selection(std::uint32_t index) noexcept;
     void set_options(std::vector<ListboxOption>* replacement);
@@ -35,5 +37,7 @@ public:
     void resize(const SliderMetrics& metrics) override;
     void dpi_changed(float factor, const SliderMetrics& metrics) override;
     void draw(RenderQueue& queue, Point origin, std::uint32_t accent) const override;
+private:
+    void notify_selection();
 };
 } // namespace skeet::ui

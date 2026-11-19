@@ -24,6 +24,8 @@ void write_rage_clipboard(std::span<const std::byte> value,
 // Failures before GlobalWire succeeds preserve the destination. An empty
 // or undecodable string replaces it with the decoder's empty result.
 void read_rage_clipboard(ConfigBytes& destination, RageClipboardApi& api = system_rage_clipboard());
+void write_config_clipboard(std::span<const std::byte>, RageClipboardApi&, std::uintptr_t window);
+void read_config_clipboard(ConfigBytes&, RageClipboardApi&);
 
 struct RageWeaponClipboardContext {
     RageWeaponGroupState& state;

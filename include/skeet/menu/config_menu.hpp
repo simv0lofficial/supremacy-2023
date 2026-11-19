@@ -35,6 +35,8 @@ public:
     void refresh();
     void update_markers() noexcept; // 0x433971CD: preserves selection/edit buffer.
     void load_hotkey(RegisteredHotkey&); // 0x4336750C: actual UI selection before load.
+    WidgetCallback selection_refreshed{};
+    ConfigPresetsManager& manager() noexcept { return manager_; }
 private:
     friend class skeet::ConfigPresetsManager;
     static void selection_changed(void*, Widget&);

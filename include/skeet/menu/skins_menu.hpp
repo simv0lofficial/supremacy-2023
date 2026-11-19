@@ -14,6 +14,7 @@ public:
         return {&models_, weapon_.get()};
     }
     void select_weapon(std::int32_t item, std::int32_t team = -1);
+    void append_team_config(std::vector<ConfigDescriptor*>&) const;
     void select_team(std::int32_t team);
     void rebuild_skin_list();
     void initialize_schema_options();

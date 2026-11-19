@@ -23,7 +23,7 @@ struct SequenceOwnerBindings {
     void* const& string_tables;
     // Captured native initialization globals. Their loads are restored INT3
     // holes at4348E019/4348E021; original instruction bytes do not contain them.
-    const std::uint32_t& viewmodel_class;
+    const std::uint32_t& weapon_world_model_class;
     const std::uint32_t& knife_class;
     engine::RecvVarProxy& viewmodel_model;
     events::DeathWeaponIconsListener& death_listener;

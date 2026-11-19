@@ -2287,7 +2287,8 @@ MovementVector movement_vector(const lagcomp::Vector& value) noexcept {
 static std::int32_t extrapolate_record(void* player, client::PlayerState& history,
                                        lagcomp::LagRecord& record, std::int32_t ticks,
                                        const MovementExtrapolationBindings& bindings,
-                                       const MovementExtrapolationLiveBindings* live) {
+                                       const MovementExtrapolationLiveBindings* live,
+                                       bool rebuild_pose = false) {
     if (ticks <= 0)
         return 0;
     if (ticks > 32)
@@ -2423,13 +2424,14 @@ static std::int32_t extrapolate_record(void* player, client::PlayerState& histor
 std::int32_t extrapolate_lag_record(void* player, client::PlayerState& history,
                                     lagcomp::LagRecord& record, std::int32_t ticks,
                                     const MovementExtrapolationBindings& bindings) {
-    return extrapolate_record(player, history, record, ticks, bindings, nullptr);
+    return extrapolate_record(player, history, record, ticks, bindings, nullptr, false);
 }
 std::int32_t extrapolate_lag_record(void* player, client::PlayerState& history,
                                     lagcomp::LagRecord& record, std::int32_t ticks,
                                     const MovementExtrapolationBindings& bindings,
-                                    const MovementExtrapolationLiveBindings& live) {
-    return extrapolate_record(player, history, record, ticks, bindings, &live);
+                                    const MovementExtrapolationLiveBindings& live,
+                                    bool rebuild_pose) {
+    return extrapolate_record(player, history, record, ticks, bindings, &live, rebuild_pose);
 }
 } // namespace skeet
 

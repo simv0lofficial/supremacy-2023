@@ -14,5 +14,5 @@ struct HistoryMatrixScratch {
 float interpolate_history_record(LagRecord& destination, const LagRecord& newer,
                                  const LagRecord& older, float requested_time, float interval,
                                  const HistoryMatrixScratch&, std::uint32_t& output_flags,
-                                 const RotationMath&);
+                                 const RotationMath&, bool use_captured_endpoint_pose = false);
 } // namespace skeet::lagcomp

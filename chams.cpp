@@ -2505,7 +2505,9 @@ std::span<const ModelHookReplacement, 1> model_occlusion_hook_replacements() {
 FakeModelPose capture_fake_model_pose(const ModelFakePoseBindings& bindings) {
     FakeModelPose pose{};
     const auto* record = bindings.record;
-    if (!record)
+    // The original 434685B8 gate is Body yaw, now owned by the source AA config.
+    // Reading the old BSS cell here leaves the fake pose permanently disabled.
+    if (!record || !record->global.enabled.value || !record->global.body_yaw.value)
         return pose;
     const auto count = record->state.value_1b0;
     if (count == 0)
@@ -2518,7 +2520,7 @@ FakeModelPose capture_fake_model_pose(const ModelFakePoseBindings& bindings) {
     pose.available = true;
     pose.capture_tick = record->state.value_1b4;
     if (!bindings.current_tick)
-        throw std::logic_error("Fake model pose requires its live engine tick alias");
+        throw std::logic_error("Fake model pose requires its live outgoing-command alias");
     pose.current_tick = *bindings.current_tick;
     pose.blend = bindings.blend;
     pose.observed_yaw = record->state.reference_yaw_258;
@@ -2571,7 +2573,7 @@ void ModelRenderHooks::draw(void* studio, const ModelDrawArguments& args) {
         entities.teammates_are_enemies = convar_integer(inputs_.teammates_are_enemies) != 0;
         if (models_.settings.shadow.value)
             history = convar_integer(inputs_.shadow_history) != 0;
-        if (models_.settings.local_fake.enabled.value && inputs_.fake_controller)
+        if (models_.settings.local_fake.enabled.value)
             fake = capture_fake_model_pose(inputs_.fake_pose);
     }
     const ModelDrawFrame frame{inputs_.classification,
@@ -2586,7 +2588,7 @@ void ModelRenderHooks::draw(void* studio, const ModelDrawArguments& args) {
                                inputs_.player_effects != 0,
                                inputs_.player_adjustments,
                                history,
-                               inputs_.fake_controller != nullptr,
+                               fake.available,
                                fake.available ? &fake : nullptr,
                                inputs_.shadows,
                                inputs_.bone_runtime,
@@ -5250,7 +5252,6 @@ struct EffectsRuntimeOwner::Data {
                    history.game_type(),
                    history.teammates_are_enemies(),
                    source.engine.variables.at(0x43467A78u),
-                   source.storage.data().native_cell<void*>(0x434685B8u),
                    {source.storage.data().native_cell<anti_aim::CommandOwner*>(0x43475940u),
                     source.storage.data().native_cell<const std::int32_t*>(0x43475B2Cu),
                     source.storage.data().native_cell<float>(0x43475890u),

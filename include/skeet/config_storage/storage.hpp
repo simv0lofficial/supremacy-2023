@@ -32,6 +32,7 @@ struct ConfigRecordView {
 // Truncated records are rejected before reading beyond the supplied stream.
 std::optional<ConfigRecordView> find_config_record(std::span<const std::byte> stream,
                                                    ConfigRecordKey key) noexcept;
+bool valid_config_stream(std::span<const std::byte> stream) noexcept;
 void initialize_config_stream(ConfigBytes& stream);
 // The padding byte in each newly appended native record is zero initialized.
 void append_config_record(ConfigBytes& stream, ConfigRecordKey key,

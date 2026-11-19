@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
+#include <cwchar>
 #include <emmintrin.h>
 
 namespace skeet::script {
@@ -35,7 +36,9 @@ int UiValues::set_widget(void* state, ui::Widget& widget, int arguments) {
         if (api.isstring(state, 2)) {
             const auto text = utf16(api.checklstring(state, 2, nullptr));
             for (const auto& option : combo.options)
-                if (option.name == text) {
+                if (option.name.size() == text.size() &&
+                    _wcsicmp(reinterpret_cast<const wchar_t*>(option.name.c_str()),
+                             reinterpret_cast<const wchar_t*>(text.c_str())) == 0) {
                     combo.set_value(option.value);
                     return 0;
                 }
